@@ -4,36 +4,56 @@ UnderSounds is a complete platform for independent music artists and their follo
 🎵 Key Features
 For Listeners
 Discover Music: Explore a catalog organized by genre, artists, and albums
+
 Listen: Integrated player to listen to music before buying
+
 Download: Get music in multiple formats (MP3, FLAC, WAV)
+
 Collect: Create your personal library with your favorite artists
+
 Connect: Rate, comment, and follow your favorite artists
+
 For Artists
 Digital Distribution: Upload and sell your music directly to fans
+
 Merchandising: Sell products related to your brand
+
 Custom Profile: Tell your story and connect with your audience
+
 Analytics: Data on plays, downloads, and sales
+
 Direct Payments: Receive income from your sales transparently
 
 🔧 Architecture
 UnderSounds uses the full MERN stack:
+
 Frontend: React.js + Vite
+
 Backend: Node.js + Express.js
+
 Database: MongoDB
+
 Authentication: JWT + OAuth2 (Google)
+
 Payments: Stripe
 
 🚀 Installation and Setup
 Prerequisites
 Node.js 16.x or higher
+
 MongoDB 4.4 or higher
+
 FFmpeg (for audio file conversion)
+
 Stripe Account (for payment processing)
+
 Registered project on Google Cloud Platform (for OAuth)
 
 Project Setup
 Clone the repository:
+
 Bash
+
 git clone https://github.com/your-user/undersounds.git
 cd undersounds
 Configure the backend:
@@ -69,23 +89,28 @@ Start the application:
 Backend:
 
 Bash
+
 cd undersounds-backend
 node server.js
-
 Frontend:
+
 Bash
+
 cd undersounds-frontend
 npm start
 Access the application:
+
 Frontend: http://localhost:3000
+
 Backend API: http://localhost:5000/api
+
 API Documentation: http://localhost:5000/api-docs
 
 📂 Project Structure
 undersounds/
 ├── undersounds-frontend/       # React Application
 │   ├── src/
-│   │   ├── assets/             # Static assets
+│   │   ├── assets/             # Static assets 
 │   │   ├── components/         # Reusable components
 │   │   ├── context/            # React Contexts
 │   │   ├── pages/              # Main pages
@@ -108,10 +133,15 @@ undersounds/
 └── README.md                   # Main documentation
 🧰 Highlighted Technical Features
 Custom audio player integrated throughout the application
+
 Real-time audio format conversion (MP3, FLAC, WAV)
+
 Advanced authentication system with JWT, refresh tokens, and OAuth
+
 Stripe integration for secure payment processing
+
 Scalable architecture based on microservices and REST API
+
 Advanced search system with filters.
 
 📜 License

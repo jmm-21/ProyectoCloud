@@ -1,144 +1,120 @@
+UnderSounds - Music Platform for Independent Artists
+UnderSounds is a complete platform for independent music artists and their followers. It allows musicians to distribute their music, sell merchandise, and connect with fans, while listeners can discover, buy, and enjoy music in various formats.
 
-# UnderSounds - Plataforma de Música para Artistas Independientes
+🎵 Key Features
+For Listeners
+Discover Music: Explore a catalog organized by genre, artists, and albums
+Listen: Integrated player to listen to music before buying
+Download: Get music in multiple formats (MP3, FLAC, WAV)
+Collect: Create your personal library with your favorite artists
+Connect: Rate, comment, and follow your favorite artists
+For Artists
+Digital Distribution: Upload and sell your music directly to fans
+Merchandising: Sell products related to your brand
+Custom Profile: Tell your story and connect with your audience
+Analytics: Data on plays, downloads, and sales
+Direct Payments: Receive income from your sales transparently
 
-UnderSounds es una plataforma completa para artistas musicales independientes y sus seguidores. Permite a los músicos distribuir su música, vender merchandising y conectar con fans, mientras que los oyentes pueden descubrir, comprar y disfrutar música en diversos formatos.
+🔧 Architecture
+UnderSounds uses the full MERN stack:
+Frontend: React.js + Vite
+Backend: Node.js + Express.js
+Database: MongoDB
+Authentication: JWT + OAuth2 (Google)
+Payments: Stripe
 
-## 🎵 Características principales
+🚀 Installation and Setup
+Prerequisites
+Node.js 16.x or higher
+MongoDB 4.4 or higher
+FFmpeg (for audio file conversion)
+Stripe Account (for payment processing)
+Registered project on Google Cloud Platform (for OAuth)
 
-### Para oyentes
-- **Descubre música**: Explora un catálogo organizado por géneros, artistas y álbumes
-- **Escucha**: Reproductor integrado para escuchar música antes de comprar
-- **Descarga**: Obtén música en múltiples formatos (MP3, FLAC, WAV)
-- **Colecciona**: Crea tu biblioteca personal con tus artistas favoritos
-- **Conecta**: Valora, comenta y sigue a tus artistas preferidos
+Project Setup
+Clone the repository:
+Bash
+git clone https://github.com/your-user/undersounds.git
+cd undersounds
+Configure the backend:
 
-### Para artistas
-- **Distribución digital**: Sube y vende tu música directamente a los fans
-- **Merchandising**: Vende productos relacionados con tu marca
-- **Perfil personalizado**: Cuenta tu historia y conecta con tu audiencia
-- **Análisis**: Datos sobre reproducciones, descargas y ventas
-- **Pagos directos**: Recibe ingresos de tus ventas de forma transparente
+Bash
 
-## 🔧 Arquitectura
+cd undersounds-backend
+npm install
+Create a .env file with:
 
-UnderSounds utiliza el stack MERN completo:
+MONGO_URI=mongodb://localhost:27017/undersounds
+ACCESS_TOKEN_SECRET=your_jwt_secret_key
+REFRESH_TOKEN_SECRET=another_jwt_secret_key
+SESSION_SECRET=key_for_sessions
+GOOGLE_CLIENT_ID=google_oauth_id
+GOOGLE_CLIENT_SECRET=google_oauth_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+STRIPE_SECRET_KEY=stripe_secret_key
+You will need a dbmeta.json file and a dbmeta_local.json file. If it's your first time starting the server, the latter file will have a lower version than the former, and the DB update process will be initiated.
 
-- **Frontend**: React.js + Vite
-- **Backend**: Node.js + Express.js
-- **Base de datos**: MongoDB
-- **Autenticación**: JWT + OAuth2 (Google)
-- **Pagos**: Stripe
+Configure the frontend:
 
-## 🚀 Instalación y configuración
+Bash
 
-### Requisitos previos
-- Node.js 16.x o superior
-- MongoDB 4.4 o superior
-- FFmpeg (para conversión de archivos de audio)
-- Cuenta en Stripe (para procesamiento de pagos)
-- Proyecto registrado en Google Cloud Platform (para OAuth)
+cd ../undersounds-frontend
+npm install
+Create a .env file with:
 
-### Configuración del proyecto
+VITE_API_URL=http://localhost:5000/api
+VITE_STRIPE_PUBLIC_KEY=stripe_public_key
+Start the application:
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/tu-usuario/undersounds.git
-   cd undersounds
-   ```
+Backend:
 
-2. **Configurar el backend**:
-   ```bash
-   cd undersounds-backend
-   npm install
-   ```
-   
-   Crea un archivo `.env` con:
-   ```
-   MONGO_URI=mongodb://localhost:27017/undersounds
-   ACCESS_TOKEN_SECRET=tu_clave_secreta_jwt
-   REFRESH_TOKEN_SECRET=otra_clave_secreta_jwt
-   SESSION_SECRET=clave_para_sesiones
-   GOOGLE_CLIENT_ID=id_de_google_oauth
-   GOOGLE_CLIENT_SECRET=secret_de_google_oauth
-   GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
-   STRIPE_SECRET_KEY=clave_secreta_de_stripe
-   ```
+Bash
+cd undersounds-backend
+node server.js
 
-   Deberás tener un archivo dbmeta.json y otro dbmeta_local.json, si es tu primera vez al iniciar el servidor el segundo de estos archivos tendrá una versión inferior al otro y por lo tanto se iniciará el proceso de actualización de la BD.
+Frontend:
+Bash
+cd undersounds-frontend
+npm start
+Access the application:
+Frontend: http://localhost:3000
+Backend API: http://localhost:5000/api
+API Documentation: http://localhost:5000/api-docs
 
-3. **Configurar el frontend**:
-   ```bash
-   cd ../undersounds-frontend
-   npm install
-   ```
-   
-   Crea un archivo `.env` con:
-   ```
-   VITE_API_URL=http://localhost:5000/api
-   VITE_STRIPE_PUBLIC_KEY=clave_publica_de_stripe
-   ```
-
-4. **Iniciar la aplicación**:
-   
-   Backend:
-   ```bash
-   cd undersounds-backend
-   node server.js
-   ```
-   
-   Frontend:
-   ```bash
-   cd undersounds-frontend
-   npm start
-   ```
-
-5. **Acceder a la aplicación**:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000/api
-   - Documentación API: http://localhost:5000/api-docs
-
-## 📂 Estructura del proyecto
-
-```
+📂 Project Structure
 undersounds/
-├── undersounds-frontend/       # Aplicación React
+├── undersounds-frontend/       # React Application
 │   ├── src/
-│   │   ├── assets/             # Recursos estáticos 
-│   │   ├── components/         # Componentes reutilizables
-│   │   ├── context/            # Contextos de React
-│   │   ├── pages/              # Páginas principales
-│   │   ├── services/           # Servicios de API
-│   │   └── utils/              # Utilidades
-│   ├── .env                    # Variables de entorno
-│   └── package.json            # Dependencias frontend
+│   │   ├── assets/             # Static assets
+│   │   ├── components/         # Reusable components
+│   │   ├── context/            # React Contexts
+│   │   ├── pages/              # Main pages
+│   │   ├── services/           # API Services
+│   │   └── utils/              # Utilities
+│   ├── .env                    # Environment variables
+│   └── package.json            # Frontend dependencies
 │
-├── undersounds-backend/        # Servidor Node.js/Express
-│   ├── config/                 # Configuraciones
-│   ├── controller/             # Controladores API
-│   ├── docs/                   # Documentación Swagger
-│   ├── model/                  # Modelos de datos
-│   ├── routes/                 # Rutas API
-│   ├── services/               # Servicios
-│   ├── utils/                  # Utilidades
-│   ├── .env                    # Variables de entorno
-│   └── package.json            # Dependencias backend
+├── undersounds-backend/        # Node.js/Express Server
+│   ├── config/                 # Configurations
+│   ├── controller/             # API Controllers
+│   ├── docs/                   # Swagger Documentation
+│   ├── model/                  # Data Models
+│   ├── routes/                 # API Routes
+│   ├── services/               # Services
+│   ├── utils/                  # Utilities
+│   ├── .env                    # Environment variables
+│   └── package.json            # Backend dependencies
 │
-└── README.md                   # Documentación principal
-```
+└── README.md                   # Main documentation
+🧰 Highlighted Technical Features
+Custom audio player integrated throughout the application
+Real-time audio format conversion (MP3, FLAC, WAV)
+Advanced authentication system with JWT, refresh tokens, and OAuth
+Stripe integration for secure payment processing
+Scalable architecture based on microservices and REST API
+Advanced search system with filters.
 
-## 🧰 Características técnicas destacadas
+📜 License
+This project is under the MIT License. See its details on Github.
 
-- **Reproductor de audio personalizado** integrado en toda la aplicación
-- **Conversión de formatos de audio** en tiempo real (MP3, FLAC, WAV)
-- **Sistema de autenticación avanzado** con JWT, refresh tokens y OAuth
-- **Integración con Stripe** para procesamiento seguro de pagos
-- **Arquitectura escalable** basada en microservicios y API REST
-- **Sistema de búsqueda avanzada** con filtros.
-
-## 📜 Licencia
-
-Este proyecto está bajo la Licencia MIT. Consulta sus detalles en Github.
-
----
-
-© 2025 UnderSounds - Plataforma para música independiente.
+© 2025 UnderSounds - Platform for independent music.

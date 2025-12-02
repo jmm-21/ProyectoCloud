@@ -12,11 +12,11 @@ import { PlayerContext } from '../../context/PlayerContext';
 const AudioPlayer = () => {
   const { currentTrack, isPlaying, playTrack, pauseTrack, stopTrack, volume, changeVolume } = useContext(PlayerContext);
   const [progress, setProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(true); // Estado para controlar la visibilidad
+  const [isVisible, setIsVisible] = useState(true); // State to control visibility
   const audioRef = useRef(new Audio());
   const location = useLocation();
 
-  // Detener la reproducción y limpiar el track si no estamos en la ruta /album
+  // Stop playback and clear the track if we are not on the /album route
   useEffect(() => {
     if (!location.pathname.startsWith('/album')) {
       stopTrack();
@@ -25,7 +25,7 @@ const AudioPlayer = () => {
     }
   }, [location.pathname, stopTrack]);
 
-  // Actualizar la fuente del audio al cambiar la pista
+  // Update audio source when the track changes
   useEffect(() => {
     if (currentTrack && currentTrack.url) {
       audioRef.current.src = currentTrack.url;
@@ -33,19 +33,19 @@ const AudioPlayer = () => {
     }
   }, [currentTrack]);
 
-  // Restaurar la visibilidad del reproductor cuando se cambie la pista
+  // Restore player visibility when the track changes
   useEffect(() => {
     if (currentTrack) {
       setIsVisible(true);
     }
   }, [currentTrack]);
 
-  // Actualizar el volumen sin reiniciar la reproducción
+  // Update volume without restarting playback
   useEffect(() => {
     audioRef.current.volume = volume;
   }, [volume]);
 
-  // Reproducir o pausar según isPlaying
+  // Play or pause according to isPlaying
   useEffect(() => {
     if (currentTrack) {
       if (isPlaying) {
@@ -56,7 +56,7 @@ const AudioPlayer = () => {
     }
   }, [isPlaying, currentTrack]);
 
-  // Actualizar el progreso del audio cada 500ms
+  // Update audio progress every 500ms
   useEffect(() => {
     const interval = setInterval(() => {
       if (audioRef.current && isPlaying) {
@@ -75,7 +75,7 @@ const AudioPlayer = () => {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
-};
+  };
 
   const handlePlayPause = () => {
     if (isPlaying) {
@@ -85,7 +85,7 @@ const AudioPlayer = () => {
     }
   };
 
-  // Usamos la lista de pistas enviada en currentTrack.tracklist, si existe, o fallback a tracksData
+  // Use the tracklist provided in currentTrack.tracklist if it exists, fallback to an empty list
   const trackList = currentTrack?.tracklist || [];
   const handleSkipNext = () => {
     if (!currentTrack) return;
@@ -126,7 +126,7 @@ const AudioPlayer = () => {
     setIsVisible(false);
   };
 
-  // Mostrar el reproductor solo si estamos en la ruta /album, hay una pista y es visible
+  // Show the player only if we're on the /album route, there is a track and it's visible
   const inReproduction = location.pathname.startsWith('/album');
   const shouldShow = inReproduction && currentTrack && isVisible;
 
@@ -146,7 +146,7 @@ const AudioPlayer = () => {
         zIndex: 1000,
       }}
     >
-      {/* Izquierda: Información de la pista (imagen, título y artista) */}
+      {/* Left: Track info (image, title and artist) */}
       <Box sx={{ display: 'flex', alignItems: 'center', width: '30%' }}>
         <img
           src={currentTrack?.coverImage || '/assets/images/default-cover.jpg'}
@@ -163,7 +163,7 @@ const AudioPlayer = () => {
         </Box>
       </Box>
 
-      {/* Centro: Controles y slider de progreso */}
+      {/* Center: Controls and progress slider */}
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '40%' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton sx={{ color: 'white' }} onClick={handleSkipPrevious}>
@@ -189,7 +189,7 @@ const AudioPlayer = () => {
         </Box>
       </Box>
 
-      {/* Derecha: Control de volumen y botón de cancelar */}
+      {/* Right: Volume control and cancel button */}
       <Box sx={{ display: 'flex', alignItems: 'center', width: '30%', justifyContent: 'flex-end' }}>
         <VolumeUpIcon />
         <Slider

@@ -69,7 +69,7 @@ export const red = {
 };
 
 export const getDesignTokens = () => {
-  // Para modo light siempre usamos los tokens light:
+  // For light mode we always use the light tokens:
   customShadows[1] =
     'hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px';
 
@@ -230,7 +230,7 @@ export const colorSchemes = {
         'hsla(220, 30%, 5%, 0.07) 0px 4px 16px 0px, hsla(220, 25%, 10%, 0.07) 0px 8px 16px -5px',
     },
   },
-  // Incluso podrías eliminar la rama dark si no la necesitas.
+  // You could even remove the dark branch if you don't need it.
 };
 
 export const typography = {

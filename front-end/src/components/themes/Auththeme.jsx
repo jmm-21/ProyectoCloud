@@ -15,7 +15,7 @@ function AppTheme(props) {
     return disableCustomTheme
       ? {}
       : createTheme({
-          palette: { mode: 'light' }, // Forzamos el modo light por defecto
+          palette: { mode: 'light' }, // Force light mode by default
           cssVariables: {
             colorSchemeSelector: 'data-mui-color-scheme',
             cssVarPrefix: 'template',

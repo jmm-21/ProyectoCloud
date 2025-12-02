@@ -39,7 +39,7 @@ const SignUpDialog = ({ open, handleClose }) => {
           fontWeight: 'bold'
         }}
       >
-        Crea tu cuenta de Undersounds
+        Create your Undersounds account
       </DialogTitle>
       <DialogContent sx={{ flex: '1 1 auto', p: 2 }}>
         <Grid container spacing={2} sx={{ backgroundColor: '#FFFFFF', p: 2 }}>
@@ -49,7 +49,7 @@ const SignUpDialog = ({ open, handleClose }) => {
                 <img 
                   src={signupFan} 
                   alt="SignUp Fan Logo" 
-                  style={{ height: '140px', borderRadius: '8px' }} // se reduce la altura si es necesario
+                  style={{ height: '140px', borderRadius: '8px' }} // reduce height if necessary
                 />
               </Grid>
               <Grid item xs={6}>
@@ -67,10 +67,10 @@ const SignUpDialog = ({ open, handleClose }) => {
                   variant="outlined"  
                   onClick={() => handleRegisterClick('fan')}
                 >
-                  Registrarse como Fan
+                  Sign up as a Fan
                 </Button>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  Regístrate como fan para seguir a tus artistas favoritos y descubrir nueva música.
+                  Sign up as a fan to follow your favorite artists and discover new music.
                 </Typography>
               </Grid>
             </Grid>
@@ -101,10 +101,10 @@ const SignUpDialog = ({ open, handleClose }) => {
                   fullWidth 
                   onClick={() => handleRegisterClick('band')}
                 >
-                  Registrarse como Banda
+                  Sign up as a Band
                 </Button>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  Regístrate como banda para compartir tu música y conectar con tus fans.
+                  Sign up as a band to share your music and connect with your fans.
                 </Typography>
               </Grid>
             </Grid>
@@ -135,10 +135,10 @@ const SignUpDialog = ({ open, handleClose }) => {
                   fullWidth 
                   onClick={() => handleRegisterClick('label')}
                 >
-                  Registrarse como Sello Discográfico
+                  Sign up as a Record Label
                 </Button>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  Regístrate como sello discográfico para gestionar tus artistas y lanzamientos.
+                  Sign up as a record label to manage your artists and releases.
                 </Typography>
               </Grid>
             </Grid>

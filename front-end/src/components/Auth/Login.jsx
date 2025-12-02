@@ -110,7 +110,7 @@ export default function Login(props) {
     }
   }, [user, navigate]);
 
-  // Limpia errorMessage al montarse el componente
+  // Clears errorMessage when the component mounts
   useEffect(() => {
     setErrorMessage('');
   }, []);
@@ -129,10 +129,10 @@ export default function Login(props) {
     event.preventDefault();
     setErrorMessage('');
 
-    // Validación del correo electrónico con regex
+    // Email validation with regex
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!emailRegex.test(email)) {
-      setErrorMessage('El correo electrónico es inválido');
+      setErrorMessage('The email address is invalid');
       return;
     }
 
@@ -141,7 +141,7 @@ export default function Login(props) {
       setUser(account);
       navigate('/');
     } catch (err) {
-      setErrorMessage('Su email o contraseña no es válido');
+      setErrorMessage('Your email or password is not valid');
     }
   };
 
@@ -155,7 +155,7 @@ export default function Login(props) {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Inicio sesión
+            Sign in
           </Typography>
           {!openForgot && errorMessage && <Alert severity="error">{errorMessage}</Alert>}
           <Box
@@ -170,12 +170,12 @@ export default function Login(props) {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="email">Correo electrónico</FormLabel>
+              <FormLabel htmlFor="email">Email address</FormLabel>
               <TextField
                 id="email"
                 type="email"
                 name="email"
-                placeholder="tu@email.com"
+                placeholder="you@email.com"
                 autoComplete="email"
                 required
                 fullWidth
@@ -188,7 +188,7 @@ export default function Login(props) {
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="password">Contraseña</FormLabel>
+              <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 name="password"
                 placeholder="••••••"
@@ -211,11 +211,11 @@ export default function Login(props) {
                   onChange={(e) => setRemember(e.target.checked)}
                 />
               }
-              label="Recuérdame"
+              label="Remember me"
             />
             <ForgotPassword open={openForgot} handleClose={handleForgotClose} />
             <Button type="submit" fullWidth variant="contained">
-              Inicia sesión
+              Sign in
             </Button>
             <Link
               component="button"
@@ -224,10 +224,10 @@ export default function Login(props) {
               variant="body2"
               sx={{ alignSelf: 'center' }}
             >
-              ¿Olvidaste tu contraseña?
+              Forgot your password?
             </Link>
           </Box>
-          <Divider>o</Divider>
+          <Divider>or</Divider>
           <Button
             variant="outlined"
             fullWidth
@@ -241,11 +241,11 @@ export default function Login(props) {
             }}
             startIcon={<GoogleIcon />}
           >
-            Iniciar sesión con Google
+            Sign in with Google
           </Button>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Typography sx={{ textAlign: 'center' }}>
-              ¿No tienes cuenta todavía? Regístrate como{' '}
+              Don't have an account yet? Register as{' '}
               <Link
                 component="button"
                 variant="body2"
@@ -267,7 +267,7 @@ export default function Login(props) {
                   navigate('/register');
                 }}
               >
-                Banda
+                Band
               </Link>
               |
               <Link
@@ -279,7 +279,7 @@ export default function Login(props) {
                   navigate('/register');
                 }}
               >
-                Sello discográfico
+                Record Label
               </Link>
             </Typography>
           </Box>

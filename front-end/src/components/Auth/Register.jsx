@@ -78,10 +78,10 @@ const Register = (props) => {
     e.preventDefault();
     setError('');
 
-    // Validación del correo electrónico con regex
+    // Email validation with regex
     const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
     if (!emailRegex.test(formData.email)) {
-      setError('El correo electrónico es inválido');
+      setError('The email address is invalid');
       return;
     }
 
@@ -89,7 +89,7 @@ const Register = (props) => {
       await register(formData);
       navigate('/login');
     } catch (err) {
-      setError('Ya existe una cuenta asociada a este correo.');
+      setError('An account is already associated with this email');
     }
   };
 
@@ -103,7 +103,7 @@ const Register = (props) => {
             variant="h4"
             sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
           >
-            Regístrate como {registerType.charAt(0).toUpperCase() + registerType.slice(1)}
+            Sign up as {registerType.charAt(0).toUpperCase() + registerType.slice(1)}
           </Typography>
           {error && <Alert severity="error">{error}</Alert>}
           <Box
@@ -118,7 +118,7 @@ const Register = (props) => {
             }}
           >
             <FormControl>
-              <FormLabel htmlFor="username">Nombre de Usuario</FormLabel>
+              <FormLabel htmlFor="username">Username</FormLabel>
               <TextField
                 id="username"
                 type="text"
@@ -132,12 +132,12 @@ const Register = (props) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="email">Correo electrónico</FormLabel>
+              <FormLabel htmlFor="email">Email address</FormLabel>
               <TextField
                 id="email"
                 type="email"
                 name="email"
-                placeholder="tu@email.com"
+                placeholder="you@email.com"
                 autoComplete="email"
                 required
                 fullWidth
@@ -147,7 +147,7 @@ const Register = (props) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel htmlFor="password">Contraseña</FormLabel>
+              <FormLabel htmlFor="password">Password</FormLabel>
               <TextField
                 name="password"
                 placeholder="••••••"
@@ -164,12 +164,12 @@ const Register = (props) => {
             {registerType === 'band' && (
               <>
                 <FormControl>
-                  <FormLabel htmlFor="bandName">Nombre de banda</FormLabel>
+                  <FormLabel htmlFor="bandName">Band name</FormLabel>
                   <TextField
                     id="bandName"
                     type="text"
                     name="bandName"
-                    placeholder="Nombre de banda"
+                    placeholder="Band name"
                     required
                     fullWidth
                     variant="outlined"
@@ -178,12 +178,12 @@ const Register = (props) => {
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel htmlFor="genre">Género</FormLabel>
+                  <FormLabel htmlFor="genre">Genre</FormLabel>
                   <TextField
                     id="genre"
                     type="text"
                     name="genre"
-                    placeholder="Género"
+                    placeholder="Genre"
                     required
                     fullWidth
                     variant="outlined"
@@ -196,12 +196,12 @@ const Register = (props) => {
             {registerType === 'label' && (
               <>
                 <FormControl>
-                  <FormLabel htmlFor="labelName">Nombre del sello</FormLabel>
+                  <FormLabel htmlFor="labelName">Label name</FormLabel>
                   <TextField
                     id="labelName"
                     type="text"
                     name="labelName"
-                    placeholder="Nombre del Sello"
+                    placeholder="Label name"
                     required
                     fullWidth
                     variant="outlined"
@@ -210,12 +210,12 @@ const Register = (props) => {
                   />
                 </FormControl>
                 <FormControl>
-                  <FormLabel htmlFor="website">Página Web</FormLabel>
+                  <FormLabel htmlFor="website">Website</FormLabel>
                   <TextField
                     id="website"
                     type="text"
                     name="website"
-                    placeholder="Sitio Web"
+                    placeholder="Website"
                     required
                     fullWidth
                     variant="outlined"
@@ -226,7 +226,7 @@ const Register = (props) => {
               </>
             )}
             <Button type="submit" fullWidth variant="contained">
-              Registrarse
+              Sign up
             </Button>
           </Box>
         </Card>

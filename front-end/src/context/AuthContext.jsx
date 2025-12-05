@@ -19,7 +19,11 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
       // Obtener datos del usuario
+<<<<<<< HEAD
       const response = await axios.get('/api/auth/me');
+=======
+      const response = await axios.get('http://localhost:5000/api/auth/me');
+>>>>>>> 635fc8eb06194a740cf8cb9a86716582093e01f5
       
       if (response.data && response.data.account) {
         return response.data.account;

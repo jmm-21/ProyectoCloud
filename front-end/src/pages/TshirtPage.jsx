@@ -50,7 +50,7 @@ const TshirtPage = () => {
   // Actualización de handleBuyNow para replicar la funcionalidad de proceder al pago
   const handleBuyNow = async () => {
     if (!user) {
-      navigate('/login');
+      navigate('http://localhost:3000/login');
       return;
     }
 
@@ -73,7 +73,7 @@ const TshirtPage = () => {
 
     // Iniciar el proceso de pago, similar al botón "proceder al pago"
     try {
-      const response = await axios.post('/create-checkout-session', {
+      const response = await axios.post('http://localhost:5000/create-checkout-session', {
         items: orderSummary.items,
       });
       window.location.href = response.data.url;

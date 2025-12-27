@@ -10,10 +10,10 @@ const Navigation = () => {
     navigate(`/discover?filter=${filter}`);
   };
 
-  // Function to verify if the current route matches the filter or the "Discover" page
+  // Función para verificar si la ruta actual coincide con el filtro o con la página "Discover"
   const isActive = (filter) => {
     if (filter === "") {
-      // For the Discover page without filter
+      // Para la página Discover sin filtro
       return location.pathname === "/discover" && location.search === "";
     }
     return location.search === `?filter=${filter}`;

@@ -164,7 +164,7 @@ const AlbumPage = () => {
     };
     try {
       const response = await axios.post(
-        `/api/albums/${album.id}/rate`,
+        `http://localhost:5000/api/albums/${album.id}/rate`,
         newRatingObj,
         { withCredentials: true }
       );

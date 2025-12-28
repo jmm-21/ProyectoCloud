@@ -12,8 +12,8 @@ UnderSounds is a complete platform for independent music artists and their follo
 - **Connect**: Rate, comment, and follow your favorite artists
 
 ### For Artists
-- **Digital Distribution**: Sube y vende tu música directamente a los fans
-- **Merchandising**: Vende productos relacionados con tu marca
+- **Digital Distribution**: Upload and sell your music directly to fans
+- **Merchandising**: Sell products related to your brand
 - **Custom Profile**: Tell your story and connect with your audience
 - **Analytics**: Data on plays, downloads, and sales
 - **Direct Payments**: Receive income from your sales transparently
@@ -24,60 +24,60 @@ UnderSounds uses the full MERN stack:
 
 - **Frontend**: React.js + Vite
 - **Backend**: Node.js + Express.js
-- **Base de datos**: MongoDB
-- **Autenticación**: JWT + OAuth2 (Google)
-- **Pagos**: Stripe
+- **Data Base**: MongoDB
+- **Authentication**: JWT + OAuth2 (Google)
+- **Payments**: Stripe
 
 ## 🚀 Installation and Setup
 
-### Requisitos previos
+### Prerequisites
 - Node.js 16.x or higher
 - MongoDB 4.4 or higher
 - FFmpeg (for audio file conversion)
 - Stripe Account (for payment processing)
 - Registered project on Google Cloud Platform (for OAuth)
 
-### Configuración del proyecto
+### Proyect Configuration
 
-1. **Clonar el repositorio**:
+1. **Clone Repository**:
    ```bash
    git clone https://github.com/tu-usuario/undersounds.git
    cd undersounds
    ```
 
-2. **Configurar el backend**:
+2. **Backend Configuration**:
    ```bash
    cd undersounds-backend
    npm install
    ```
    
-   Crea un archivo `.env` con:
+   Create a `.env` file with:
    ```
-  MONGO_URI=mongodb://localhost:27017/undersounds
-  ACCESS_TOKEN_SECRET=your_jwt_secret_key
-  REFRESH_TOKEN_SECRET=another_jwt_secret_key
-  SESSION_SECRET=key_for_sessions
-  GOOGLE_CLIENT_ID=google_oauth_id
-  GOOGLE_CLIENT_SECRET=google_oauth_secret
-  GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
-  STRIPE_SECRET_KEY=stripe_secret_key
+     MONGO_URI=mongodb://localhost:27017/undersounds
+     ACCESS_TOKEN_SECRET=your_jwt_secret_key
+     REFRESH_TOKEN_SECRET=another_jwt_secret_key
+     SESSION_SECRET=key_for_sessions
+     GOOGLE_CLIENT_ID=google_oauth_id
+     GOOGLE_CLIENT_SECRET=google_oauth_secret
+     GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+     STRIPE_SECRET_KEY=stripe_secret_key
    ```
 
   You will need a dbmeta.json file and a dbmeta_local.json file. If it's your first time starting the server, the latter file will have a lower version than the former, and the DB update process will be initiated.
 
-3. **Configurar el frontend**:
+3. **Backend Configuration**:
    ```bash
    cd ../undersounds-frontend
    npm install
    ```
    
-   Crea un archivo `.env` con:
+   Create a `.env` file with:
    ```
    VITE_API_URL=http://localhost:5000/api
    VITE_STRIPE_PUBLIC_KEY=stripe_public_key
    ```
 
-4. **Iniciar la aplicación**:
+4. **Start app**:
    
    Backend:
    ```bash
@@ -91,12 +91,12 @@ UnderSounds uses the full MERN stack:
    npm start
    ```
 
-5. **Acceder a la aplicación**:
+5. **Access the app**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000/api
    - API Documentation: http://localhost:5000/api-docs
 
-## 📂 Estructura del proyecto
+## 📂 Proyect Structure
 
 ```
 undersounds/
@@ -125,7 +125,7 @@ undersounds/
 └── README.md                   # Main documentation
 ```
 
-## 🧰 Características técnicas destacadas
+## 🧰 Key technical features
 
 - **Custom audio player** integrated throughout the application
 - **Real-time audio format conversion** in real time (MP3, FLAC, WAV)

@@ -2,15 +2,15 @@ openapi: 3.0.0
 info:
   title: UnderSounds API Authentication
   version: "1.0.0"
-  description: "API para manejo de usuarios: registro, login, actualización, logout, OAuth2.0 con Google, recuperación de contraseña y refresh token mediante cookies."
+  description: "API for user management: registration, login, update, logout, OAuth2.0 with Google, password recovery, and refresh token via cookies."
 servers:
   - url: http://localhost:5000/api
 paths:
   /auth/register:
     post:
-      summary: Registra una nueva cuenta.
+      summary: Register a new account.
       requestBody:
-        description: Datos del usuario a crear.
+        description: User data for account creation.
         required: true
         content:
           application/json:
@@ -32,18 +32,18 @@ paths:
                 - password
       responses:
         "201":
-          description: Cuenta creada exitosamente.
+          description: Account created successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
         "500":
-          description: Error interno.
+          description: Internal error.
   /auth/login:
     post:
-      summary: Inicia sesión.
+      summary: Log in.
       requestBody:
-        description: Credenciales para acceder.
+        description: Credentials to access.
         required: true
         content:
           application/json:
@@ -61,19 +61,19 @@ paths:
                 - password
       responses:
         "200":
-          description: Login exitoso. Devuelve el access token en el body y setea el refresh token en cookie HttpOnly.
+          description: Successful login. Returns the access token in the body and sets the refresh token in an HttpOnly cookie.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
         "401":
-          description: Credenciales inválidas.
+          description: Invalid credentials.
   /auth/refresh-token:
     post:
-      summary: Refresca el access token usando el refresh token almacenado en cookie.
+      summary: Refresh the access token using the refresh token stored in a cookie.
       responses:
         "200":
-          description: Nuevo access token generado.
+          description: New access token generated.
           content:
             application/json:
               schema:
@@ -83,10 +83,10 @@ paths:
                     type: string
                     example: newAccessToken123
         "401":
-          description: Refresh token inválido o caducado.
+          description: Invalid or expired refresh token.
   /auth/{id}:
     put:
-      summary: Actualiza el perfil de un usuario.
+      summary: Update user profile.
       parameters:
         - in: path
           name: id
@@ -94,7 +94,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Campos a actualizar.
+        description: Fields to update.
         required: true
         content:
           application/json:
@@ -103,10 +103,10 @@ paths:
               properties:
                 username:
                   type: string
-                  example: nuevoNombre
+                  example: newName
                 bio:
                   type: string
-                  example: Nueva bio
+                  example: New bio
                 bandName:
                   type: string
                   example: The Rockers
@@ -118,22 +118,22 @@ paths:
                   example: Super Records
                 website:
                   type: string
-                  example: https://ejemplo.com
+                  example: https://example.com
       responses:
         "200":
-          description: Cuenta actualizada.
+          description: Updated account.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Account'
         "500":
-          description: Error interno.
+          description: Internal error.
   /auth/logout:
     post:
-      summary: Cierra la sesión del usuario.
+      summary: Log out the user.
       responses:
         "200":
-          description: Logout exitoso. Se borra el access token en memoria y se elimina la cookie del refresh token.
+          description: Successful logout. The access token in memory is deleted and the refresh token cookie is removed.
           content:
             application/json:
               schema:
@@ -144,9 +144,9 @@ paths:
                     example: true
   /auth/forgot-password:
     post:
-      summary: Solicita recuperación de contraseña.
+      summary: Request password recovery.
       requestBody:
-        description: Email del usuario para enviar el código OTP.
+        description: User email to send the OTP code.
         required: true
         content:
           application/json:
@@ -158,7 +158,7 @@ paths:
                   example: fan1@example.com
       responses:
         "200":
-          description: Mensaje de confirmación (el código se envía si la cuenta existe).
+          description: Confirmation message (the code is sent if the account exists).
           content:
             application/json:
               schema:
@@ -166,14 +166,14 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Si el correo existe, se enviará un código de recuperación."
+                    example: "If the email exists, a recovery code will be sent".
         "500":
-          description: Error interno.
+          description: Internal error.
   /auth/reset-password:
     post:
-      summary: Restablece la contraseña utilizando el código OTP.
+      summary: Reset the password using the OTP code.
       requestBody:
-        description: Email, código OTP y la nueva contraseña.
+        description: Email, OTP code and new password.
         required: true
         content:
           application/json:
@@ -191,7 +191,7 @@ paths:
                   example: newPassword123
       responses:
         "200":
-          description: Contraseña actualizada exitosamente.
+          description: Password updated successfully.
           content:
             application/json:
               schema:
@@ -201,27 +201,27 @@ paths:
                     type: boolean
                     example: true
         "400":
-          description: Código OTP inválido o caducado.
+          description: OTP code invalid or expired.
         "500":
-          description: Error interno.
+          description: Internal error.
   /auth/google:
     get:
-      summary: Inicia autenticación con Google.
+      summary: Start authentication with Google.
       responses:
         "302":
-          description: Redirige a Google para autenticación.
+          description: Redirects to Google for authentication.
   /auth/google/callback:
     get:
-      summary: Callback de autenticación con Google.
+      summary: Google authentication callback.
       responses:
         "302":
-          description: Redirige al frontend tras autenticación exitosa.
+          description: Redirects to the frontend after successful authentication.
   /albums:
     get:
-      summary: Obtiene todos los álbumes
+      summary: Get all albums.
       responses:
         "200":
-          description: Lista de álbumes obtenida exitosamente
+          description: Album list retrieved successfully.
           content:
             application/json:
               schema:
@@ -229,11 +229,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Album'
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     post:
-      summary: Crea un nuevo álbum
+      summary: Creates new album.
       requestBody:
-        description: Datos del álbum a crear
+        description: Data for creating an album.
         required: true
         content:
           application/json:
@@ -241,18 +241,18 @@ paths:
               $ref: '#/components/schemas/AlbumInput'
       responses:
         "201":
-          description: Álbum creado exitosamente
+          description: Album created successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Album'
         "400":
-          description: Datos inválidos
+          description: Invalid data.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /albums/{id}:
     get:
-      summary: Obtiene un álbum por su ID
+      summary: Get an album by its ID.
       parameters:
         - in: path
           name: id
@@ -261,17 +261,17 @@ paths:
             type: string
       responses:
         "200":
-          description: Álbum obtenido exitosamente
+          description: Album obtained successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Album'
         "404":
-          description: Álbum no encontrado
+          description: Album not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     put:
-      summary: Actualiza un álbum existente
+      summary: Updates an existing album.
       parameters:
         - in: path
           name: id
@@ -279,7 +279,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Datos actualizados del álbum
+        description: Album data updated.
         required: true
         content:
           application/json:
@@ -287,17 +287,17 @@ paths:
               $ref: '#/components/schemas/AlbumInput'
       responses:
         "200":
-          description: Álbum actualizado exitosamente
+          description: Album updated successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Album'
         "404":
-          description: Álbum no encontrado
+          description: Album not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     delete:
-      summary: Elimina un álbum
+      summary: Deletes an album.
       parameters:
         - in: path
           name: id
@@ -306,7 +306,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Álbum eliminado exitosamente
+          description: Album deleted successfully.
           content:
             application/json:
               schema:
@@ -316,12 +316,12 @@ paths:
                     type: string
                     example: "Album deleted successfully"
         "404":
-          description: Álbum no encontrado
+          description: Album not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /albums/{id}/ratings:
     post:
-      summary: Añade una valoración a un álbum
+      summary: Adds a rating to an album.
       parameters:
         - in: path
           name: id
@@ -329,7 +329,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Datos de la valoración
+        description: Rating data.
         required: true
         content:
           application/json:
@@ -350,7 +350,7 @@ paths:
                   example: "/assets/images/avatar1.jpg"
       responses:
         "200":
-          description: Valoración añadida exitosamente
+          description: Rating added successfully.
           content:
             application/json:
               schema:
@@ -362,12 +362,12 @@ paths:
                   album:
                     $ref: '#/components/schemas/Album'
         "404":
-          description: Álbum no encontrado
+          description: Album not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /albums/{id}/download:
     get:
-      summary: Descarga una pista específica de un álbum
+      summary: Downloads a specific track from an album.
       parameters:
         - in: path
           name: id
@@ -379,7 +379,7 @@ paths:
           required: true
           schema:
             type: string
-          description: ID de la pista a descargar
+          description: ID of the track to download.
         - in: query
           name: format
           required: false
@@ -387,10 +387,10 @@ paths:
             type: string
             enum: [mp3, wav, flac]
             default: mp3
-          description: Formato de audio para la descarga
+          description: Audio format for the download.
       responses:
         "200":
-          description: Archivo de audio descargado exitosamente
+          description: Audio file downloaded successfully.
           content:
             audio/mpeg:
               schema:
@@ -405,14 +405,14 @@ paths:
                 type: string
                 format: binary
         "400":
-          description: Parámetros inválidos
+          description: Invalid parameters.
         "404":
-          description: Álbum o pista no encontrados
+          description: Album or track not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /albums/{id}/download-album:
     get:
-      summary: Descarga un álbum completo como archivo ZIP
+      summary: Download a complete album as a ZIP file.
       parameters:
         - in: path
           name: id
@@ -426,27 +426,27 @@ paths:
             type: string
             enum: [mp3, wav, flac]
             default: mp3
-          description: Formato de audio para las pistas del álbum
+          description: Audio format for the album tracks.
       responses:
         "200":
-          description: Archivo ZIP descargado exitosamente
+          description: ZIP file downloaded successfully.
           content:
             application/zip:
               schema:
                 type: string
                 format: binary
         "400":
-          description: Parámetros inválidos
+          description: Invalid parameters.
         "404":
-          description: Álbum no encontrado o sin pistas
+          description: Album not found or without tracks.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /artists:
     get:
-      summary: Obtiene todos los artistas
+      summary: Get all artist
       responses:
         "200":
-          description: Lista de artistas obtenida exitosamente
+          description: Artits list obtained successfully.
           content:
             application/json:
               schema:
@@ -454,11 +454,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Artist'
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     post:
-      summary: Crea un nuevo artista
+      summary: Creates new artist.
       requestBody:
-        description: Datos del artista a crear
+        description: Artist data to create.
         required: true
         content:
           application/json:
@@ -466,19 +466,19 @@ paths:
               $ref: '#/components/schemas/ArtistInput'
       responses:
         "201":
-          description: Artista creado exitosamente
+          description: Artist created successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Artist'
         "400":
-          description: Datos inválidos
+          description: Invalid data.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
 
   /artists/{id}:
     get:
-      summary: Obtiene un artista por su ID
+      summary: Get artist by its ID.
       parameters:
         - in: path
           name: id
@@ -487,17 +487,17 @@ paths:
             type: string
       responses:
         "200":
-          description: Artista obtenido exitosamente
+          description: Artist obtained successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Artist'
         "404":
-          description: Artista no encontrado
+          description: Artist not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     put:
-      summary: Actualiza un artista existente
+      summary: Updates artists successfully.
       parameters:
         - in: path
           name: id
@@ -505,7 +505,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Datos actualizados del artista
+        description: Updated artist data.
         required: true
         content:
           application/json:
@@ -513,17 +513,17 @@ paths:
               $ref: '#/components/schemas/ArtistInput'
       responses:
         "200":
-          description: Artista actualizado exitosamente
+          description: Artist updated successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Artist'
         "404":
-          description: Artista no encontrado
+          description: Artist not found.
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     delete:
-      summary: Elimina un artista
+      summary: Deletes an artist.
       parameters:
         - in: path
           name: id
@@ -532,7 +532,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Artista eliminado exitosamente
+          description: Artist deleted successfully.
           content:
             application/json:
               schema:
@@ -542,15 +542,15 @@ paths:
                     type: string
                     example: "Artist deleted successfully"
         "404":
-          description: Artista no encontrado
+          description: Artist not found
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
   /merch:
     get:
-      summary: Obtiene todo el merchandising disponible
+      summary: Gets all available merchandise.
       responses:
         "200":
-          description: Lista de merchandising obtenida exitosamente
+          description: Merchandise list retrieved successfully.
           content:
             application/json:
               schema:
@@ -558,11 +558,11 @@ paths:
                 items:
                   $ref: '#/components/schemas/Merchandise'
         "500":
-          description: Error interno del servidor
+          description: Server internal error.
     post:
-      summary: Crea un nuevo artículo de merchandising
+      summary: Creates a new merchandise item.
       requestBody:
-        description: Datos del artículo a crear
+        description: Data of the item to create.
         required: true
         content:
           application/json:
@@ -570,15 +570,15 @@ paths:
               $ref: '#/components/schemas/MerchandiseInput'
       responses:
         "201":
-          description: Artículo creado exitosamente
+          description: Item created successfully.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Merchandise'
         "400":
-          description: Datos inválidos
+          description: Invalid data.
         "500":
-          description: Error interno del servidor
+          description: Server internal error
 
   /merch/{id}:
     get:

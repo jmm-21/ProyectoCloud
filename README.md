@@ -120,7 +120,12 @@ undersounds/
 │   ├── services/               # Services
 │   ├── utils/                  # Utilities
 │   ├── .env                    # Environment variables
-│   └── package.json            # Backend dependencies
+│   ├── package.json            # Backend dependencies
+|   ├── package-lock.json       #
+|   ├── export-db.js            #
+|   ├── import-db.js            #
+|   ├── server.js               #
+|   └── README.md               # Backend documentation
 │
 └── README.md                   # Main documentation
 ```

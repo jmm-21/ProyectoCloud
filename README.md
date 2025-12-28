@@ -121,10 +121,10 @@ undersounds/
 │   ├── utils/                  # Utilities
 │   ├── .env                    # Environment variables
 │   ├── package.json            # Backend dependencies
-|   ├── package-lock.json       #
-|   ├── export-db.js            #
-|   ├── import-db.js            #
-|   ├── server.js               #
+|   ├── package-lock.json       # Locked versions of dependencies
+|   ├── export-db.js            # Script to export MongoDB collections to JSON
+|   ├── import-db.js            # Script to import JSON files into MongoDB
+|   ├── server.js               # Entry point
 |   └── README.md               # Backend documentation
 │
 └── README.md                   # Main documentation

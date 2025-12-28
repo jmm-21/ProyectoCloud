@@ -109,6 +109,8 @@ npm run mongoexport
 - Internet connection for external services (Stripe, OAuth)
 
 ## Project structure
+
+```
 undersounds-backend/
 ├── config/              # Configurations (DB, Passport)
 ├── controller/          # API Controllers
@@ -121,3 +123,4 @@ undersounds-backend/
 ├── view/                # HTML Views (minimal)
 ├── .env                 # Environment variables (not in repo)
 └── server.js            # Entry point
+```

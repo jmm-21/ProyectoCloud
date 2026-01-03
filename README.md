@@ -41,13 +41,13 @@ UnderSounds uses the full MERN stack:
 
 1. **Clonar el repositorio**:
    ```bash
-   git clone https://github.com/tu-usuario/undersounds.git
-   cd undersounds
+   git clone https://github.com/usuario/ProyectoCloud.git
+   cd ProyectoCloud
    ```
 
 2. **Configurar el backend**:
    ```bash
-   cd undersounds-backend
+   cd back-end
    npm install
    ```
    
@@ -67,7 +67,7 @@ UnderSounds uses the full MERN stack:
 
 3. **Configurar el frontend**:
    ```bash
-   cd ../undersounds-frontend
+   cd ../front-end
    npm install
    ```
    
@@ -81,13 +81,13 @@ UnderSounds uses the full MERN stack:
    
    Backend:
    ```bash
-   cd undersounds-backend
+   cd back-end
    node server.js
    ```
    
    Frontend:
    ```bash
-   cd undersounds-frontend
+   cd front-end
    npm start
    ```
 
@@ -99,8 +99,8 @@ UnderSounds uses the full MERN stack:
 ## 📂 Estructura del proyecto
 
 ```
-undersounds/
-├── undersounds-frontend/       # React Application
+ProyectoCloud/
+├── front-end/       # React Application
 │   ├── src/
 │   │   ├── assets/             # Static assets
 │   │   ├── components/         # Reusable components
@@ -111,7 +111,7 @@ undersounds/
 │   ├── .env                    # Environment variables
 │   └── package.json            # Frontend dependencies
 │
-├── undersounds-backend/        # Node.js/Express Server
+├── back-end/        # Node.js/Express Server
 │   ├── config/                 # Configurations
 │   ├── controller/             # API Controllers
 │   ├── docs/                   # Swagger Documentation

@@ -111,7 +111,7 @@ npm run mongoexport
 ## Project structure
 
 ```
-undersounds-backend/
+back-end/
 ├── config/              # Configurations (DB, Passport)
 ├── controller/          # API Controllers
 ├── data-dump/           # Exported MongoDB data

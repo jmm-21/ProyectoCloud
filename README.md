@@ -30,54 +30,54 @@ UnderSounds uses the full MERN stack:
 
 ## 🚀 Installation and Setup
 
-### Requisitos previos
+### Prerequisites
 - Node.js 16.x or higher
 - MongoDB 4.4 or higher
 - FFmpeg (for audio file conversion)
 - Stripe Account (for payment processing)
 - Registered project on Google Cloud Platform (for OAuth)
 
-### Configuración del proyecto
+### Proyect Configuration
 
-1. **Clonar el repositorio**:
+1. **Clone Repository**:
    ```bash
-   git clone https://github.com/usuario/ProyectoCloud.git
+   git clone https://github.com/tu-usuario/ProyectoCloud.git
    cd ProyectoCloud
    ```
 
-2. **Configurar el backend**:
+2. **Backend Configuration**:
    ```bash
    cd back-end
    npm install
    ```
    
-   Crea un archivo `.env` con:
+   Create a `.env` file with:
    ```
-  MONGO_URI=mongodb://localhost:27017/undersounds
-  ACCESS_TOKEN_SECRET=your_jwt_secret_key
-  REFRESH_TOKEN_SECRET=another_jwt_secret_key
-  SESSION_SECRET=key_for_sessions
-  GOOGLE_CLIENT_ID=google_oauth_id
-  GOOGLE_CLIENT_SECRET=google_oauth_secret
-  GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
-  STRIPE_SECRET_KEY=stripe_secret_key
+     MONGO_URI=mongodb://localhost:27017/undersounds
+     ACCESS_TOKEN_SECRET=your_jwt_secret_key
+     REFRESH_TOKEN_SECRET=another_jwt_secret_key
+     SESSION_SECRET=key_for_sessions
+     GOOGLE_CLIENT_ID=google_oauth_id
+     GOOGLE_CLIENT_SECRET=google_oauth_secret
+     GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+     STRIPE_SECRET_KEY=stripe_secret_key
    ```
 
   You will need a dbmeta.json file and a dbmeta_local.json file. If it's your first time starting the server, the latter file will have a lower version than the former, and the DB update process will be initiated.
 
-3. **Configurar el frontend**:
+3. **Backend Configuration**:
    ```bash
    cd ../front-end
    npm install
    ```
    
-   Crea un archivo `.env` con:
+   Create a `.env` file with:
    ```
    VITE_API_URL=http://localhost:5000/api
    VITE_STRIPE_PUBLIC_KEY=stripe_public_key
    ```
 
-4. **Iniciar la aplicación**:
+4. **Start app**:
    
    Backend:
    ```bash
@@ -87,16 +87,16 @@ UnderSounds uses the full MERN stack:
    
    Frontend:
    ```bash
-   cd front-end
+   cd undersounds-frontend
    npm start
    ```
 
-5. **Acceder a la aplicación**:
+5. **Access the app**:
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000/api
    - API Documentation: http://localhost:5000/api-docs
 
-## 📂 Estructura del proyecto
+## 📂 Proyect Structure
 
 ```
 ProyectoCloud/
@@ -120,12 +120,17 @@ ProyectoCloud/
 │   ├── services/               # Services
 │   ├── utils/                  # Utilities
 │   ├── .env                    # Environment variables
-│   └── package.json            # Backend dependencies
+│   ├── package.json            # Backend dependencies
+|   ├── package-lock.json       # Locked versions of dependencies
+|   ├── export-db.js            # Script to export MongoDB collections to JSON
+|   ├── import-db.js            # Script to import JSON files into MongoDB
+|   ├── server.js               # Entry point
+|   └── README.md               # Backend documentation
 │
 └── README.md                   # Main documentation
 ```
 
-## 🧰 Características técnicas destacadas
+## 🧰 Key technical features
 
 - **Custom audio player** integrated throughout the application
 - **Real-time audio format conversion** in real time (MP3, FLAC, WAV)
@@ -139,5 +144,7 @@ ProyectoCloud/
 This project is under the MIT License. See its details on Github.
 
 ---
+
+© 2025 UnderSounds - Platform for independent music.
 
 © 2025 UnderSounds - Platform for independent music.

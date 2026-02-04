@@ -24,7 +24,7 @@ import { PlayerProvider } from './context/PlayerContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import AudioPlayer from './components/Player/AudioPlayer';
-import ConcertPage from './pages/Concertpage';
+import ConcertPage from './pages/ConcertPage';
 import axios from 'axios';
 
 const theme = createTheme({

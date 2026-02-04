@@ -6,7 +6,9 @@ export default defineConfig({
   server: {
     host: true, // Permite exponer el servidor en la red
     port: 8080,
-    allowedHosts: ['41e4-79-117-153-78.ngrok-free.app'],
+    allowedHosts: [
+      'proyectocloud-frontend.onrender.com' // Solo el dominio, sin https://
+    ]
   },
   build: {
     outDir: 'build',

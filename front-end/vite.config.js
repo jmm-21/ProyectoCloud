@@ -6,9 +6,7 @@ export default defineConfig({
   server: {
     host: true, // Permite exponer el servidor en la red
     port: 8080,
-    allowedHosts: [
-      'proyectocloud-frontend.onrender.com' // Solo el dominio, sin https://
-    ]
+    allowedHosts: ['proyectocloud-frontend.onrender.com']
   },
   build: {
     outDir: 'build',

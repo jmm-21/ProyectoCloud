@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // URL base para tus endpoints de álbumes y artistas
-const ALBUM_BASE_URL = "/api/albums";
-const ARTIST_BASE_URL = "/api/artists";
+const ALBUM_BASE_URL = `${import.meta.env.VITE_API_URL}/api/albums`;
+const ARTIST_BASE_URL = `${import.meta.env.VITE_API_URL}/api/artists`;
 
 // Función para obtener álbumes (usando los endpoints de AlbumController)
 export const fetchAlbums = async () => {

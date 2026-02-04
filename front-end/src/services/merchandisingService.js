@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // URL base del backend para merchandising
-const API_URL = '/api/merchandising';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/merchandising`;
 
 // Obtener todo el merchandising
 export const getAllMerch = async () => {

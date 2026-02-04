@@ -34,14 +34,14 @@ const Header = () => {
   const [filter, setFilter] = useState('all');
   const [results, setResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null); // For the avatar menu
+  const [anchorEl, setAnchorEl] = useState(null); // Para el menú del avatar
   const navigate = useNavigate();
   const location = useLocation();
   const containerRef = useRef(null);
   const { user, logout, setUser } = useContext(AuthContext);
   const { cartItems } = useContext(CartContext);
 
-  // Function that performs the search using service functions
+  // Función que realiza la búsqueda usando las funciones de los servicios
   const handleSearch = async () => {
     try {
       let filteredResults = [];
@@ -68,7 +68,7 @@ const Header = () => {
       }
 
       if (filter === 'all' || filter === 'tracks') {
-        // Use albums to extract tracks, adding albumId and albumCover
+        // Se utilizan los álbumes para extraer las pistas, agregando albumId y albumCover
         const albums = await fetchAlbums();
         let tracksList = [];
         albums.forEach(album => {
@@ -94,7 +94,7 @@ const Header = () => {
     }
   };
 
-  // Debounce for searches
+  // Debounce para búsquedas
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (query.trim()) {
@@ -108,7 +108,7 @@ const Header = () => {
     return () => clearTimeout(timeoutId);
   }, [query, filter]);
 
-  // Reset search when the route changes
+  // Reinicia la búsqueda al cambiar de ruta
   useEffect(() => {
     setQuery('');
     setResults([]);
@@ -143,7 +143,7 @@ const Header = () => {
           <ListItemAvatar>
             <Avatar src={result.data.profileImage} alt={result.data.name} />
           </ListItemAvatar>
-          <ListItemText primary={result.data.name} secondary="Artist" />
+          <ListItemText primary={result.data.name} secondary="Artista" />
         </ListItem>
       );
     } else if (result.type === 'album') {
@@ -157,7 +157,7 @@ const Header = () => {
           <ListItemAvatar>
             <Avatar src={result.data.coverImage} alt={result.data.title} />
           </ListItemAvatar>
-          <ListItemText primary={result.data.title} secondary="Album" />
+          <ListItemText primary={result.data.title} secondary="Álbum" />
         </ListItem>
       );
     } else if (result.type === 'track') {
@@ -171,14 +171,14 @@ const Header = () => {
           <ListItemAvatar>
             <Avatar src={result.data.albumCover} alt={result.data.title} />
           </ListItemAvatar>
-          <ListItemText primary={result.data.title} secondary="Track" />
+          <ListItemText primary={result.data.title} secondary="Pista" />
         </ListItem>
       );
     }
     return null;
   };
 
-  // Avatar menu functions
+  // Funciones para el menú del avatar
   const handleAvatarClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -206,17 +206,17 @@ const Header = () => {
   return (
     <AppBar position="sticky" color="primary" elevation={2}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        {/* Left area: Logo */}
+        {/* Zona Izquierda: Logo */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <img src={logo} alt="UnderSounds Logo" style={{ width: '150px' }} />
           </Link>
         </Box>
-        {/* Center area: Search area */}
+        {/* Zona central: Área de búsqueda */}
         <Box ref={containerRef} sx={{ display: 'flex', flexDirection: 'column', mx: 2, flexGrow: 1, position: 'relative' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <InputBase
-              placeholder="Search music, artists, albums, tracks..."
+              placeholder="Buscar música, artistas, álbumes, pistas..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => { if (query.trim()) setShowDropdown(true); }}
@@ -264,10 +264,10 @@ const Header = () => {
                 indicatorColor="secondary"
                 sx={{ minHeight: 'auto' }}
               >
-                <Tab label="All" value="all" />
-                <Tab label="Artists" value="artists" />
-                <Tab label="Albums" value="albums" />
-                <Tab label="Tracks" value="tracks" />
+                <Tab label="Todos" value="all" />
+                <Tab label="Artistas" value="artists" />
+                <Tab label="Álbumes" value="albums" />
+                <Tab label="Pistas" value="tracks" />
               </Tabs>
               {results.length > 0 && (
                 <List>
@@ -276,14 +276,14 @@ const Header = () => {
                     button
                     onClick={() => navigate(`/explore?filter=${filter}&q=${encodeURIComponent(query.trim())}`)}
                   >
-                    <ListItemText primary="Show more" />
+                    <ListItemText primary="Mostrar más" />
                   </ListItem>
                 </List>
               )}
             </Paper>
           )}
         </Box>
-        {/* Right area: Cart and authentication buttons */}
+        {/* Zona Derecha: Botones de Carrito y autenticación */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Button color="inherit" onClick={() => navigate('/cart')}>
             <Badge
@@ -306,7 +306,7 @@ const Header = () => {
           {user ? (
             <>
               <IconButton onClick={handleAvatarClick}>
-                <Avatar src={user.profileImage} alt={user.username || user.bandName || 'User'} sx={{ width: 40, height: 40 }} />
+                <Avatar src={user.profileImage} alt={user.username || user.bandName || 'Usuario'} sx={{ width: 40, height: 40 }} />
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
@@ -315,17 +315,17 @@ const Header = () => {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               >
-                <MenuItem onClick={handleProfile}>My profile</MenuItem>
-                <MenuItem onClick={handleLogout}>Log out</MenuItem>
+                <MenuItem onClick={handleProfile}>Mi perfil</MenuItem>
+                <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
               </Menu>
             </>
           ) : (
             <>
               <Button color="inherit" onClick={handleOpenSignUp}>
-                Sign up
+                Registrate
               </Button>
               <Button color="inherit" component={Link} to="/login">
-                Sign in
+                Inicia Sesión
               </Button>
             </>
           )}

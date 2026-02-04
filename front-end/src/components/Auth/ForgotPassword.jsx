@@ -23,7 +23,7 @@ function ForgotPassword({ open, handleClose }) {
   const [message, setMessage] = useState('');
   const inputRefs = useRef([]);
 
-  // Effect that resets states when the dialog closes
+  // Efecto que reinicia estados cuando se cierra el diálogo
   useEffect(() => {
     if (!open) {
       setStep(1);
@@ -36,7 +36,7 @@ function ForgotPassword({ open, handleClose }) {
     }
   }, [open]);
 
-  // Step 1: Request OTP
+  // Paso 1: Solicitar OTP (mantiene estética y texto original)
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     try {
@@ -45,11 +45,11 @@ function ForgotPassword({ open, handleClose }) {
       setOtpToken(otpToken);
       setStep(2);
     } catch (error) {
-      setMessage(error.response?.data.error || 'Error requesting OTP');
+      setMessage(error.response?.data.error || 'Error al solicitar OTP');
     }
   };
 
-  // Step 2: Verify OTP locally (comparing the entered value with the decoded token)
+  // Paso 2: Verificar OTP localmente (comparando lo ingresado con el token decodificado)
   const handleVerifyOtp = (e) => {
     e.preventDefault();
     const otp = otpValues.join('');
@@ -59,46 +59,46 @@ function ForgotPassword({ open, handleClose }) {
         setMessage('');
         setStep(3);
       } else {
-        setMessage('The entered OTP code is incorrect');
+        setMessage('El código OTP ingresado es incorrecto');
       }
     } catch (error) {
-      setMessage('Error verifying OTP');
+      setMessage('Error al verificar el OTP');
     }
   };
 
-  // Handle changes in each OTP box
+  // Manejo de cambios en cada recuadro del OTP
   const handleOtpChange = (e, index) => {
     const { value } = e.target;
     if (value.length > 1) return;
-    const newOtp = [...otpValues];
-    newOtp[index] = value;
-    setOtpValues(newOtp);
+    const nuevoOtp = [...otpValues];
+    nuevoOtp[index] = value;
+    setOtpValues(nuevoOtp);
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
   };
 
-  // Allows deleting with backspace
+  // Permite borrar con retroceso
   const handleOtpKeyDown = (e, index) => {
     if (e.key === 'Backspace' && otpValues[index] === '' && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
-  // Step 3: Reset password
+  // Paso 3: Restablecer contraseña
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setMessage('Passwords do not match');
+      setMessage('Las contraseñas no coinciden');
       return;
     }
     const otp = otpValues.join('');
     try {
       const response = await authService.resetPassword(email, otp, newPassword, otpToken);
-      setMessage(response.message || 'Password updated successfully');
+      setMessage(response.message || 'Contraseña actualizada exitosamente');
       setTimeout(() => {
         handleClose();
-        // Reinitialize states after closing the dialog
+        // Reinicia estados luego de cerrar el diálogo
         setStep(1);
         setEmail('');
         setOtpValues(Array(6).fill(''));
@@ -108,7 +108,7 @@ function ForgotPassword({ open, handleClose }) {
         setOtpToken('');
       }, 750);
     } catch (error) {
-      setMessage(error.response?.data.error || 'Error resetting password');
+      setMessage(error.response?.data.error || 'Error al restablecer la contraseña');
     }
   };
 
@@ -128,16 +128,16 @@ function ForgotPassword({ open, handleClose }) {
       }}
     >
       <DialogTitle>
-        {step === 1 && 'Recover your password'}
-        {step === 2 && 'Enter the OTP code'}
-        {step === 3 && 'Reset your password'}
+        {step === 1 && 'Recupera tu contraseña'}
+        {step === 2 && 'Ingresa el código OTP'}
+        {step === 3 && 'Restablece tu contraseña'}
       </DialogTitle>
       <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
         {message && <Alert severity="info">{message}</Alert>}
         {step === 1 && (
           <>
             <DialogContentText>
-              Enter your email address and we will send you an OTP code to reset your password.
+              Ingresa tu dirección de correo electrónico y te enviaremos un código OTP para restablecer tu contraseña.
             </DialogContentText>
             <OutlinedInput
               autoFocus
@@ -145,7 +145,7 @@ function ForgotPassword({ open, handleClose }) {
               margin="dense"
               id="email"
               name="email"
-              placeholder="Email address"
+              placeholder="Correo electrónico"
               type="email"
               fullWidth
               value={email}
@@ -156,7 +156,7 @@ function ForgotPassword({ open, handleClose }) {
         {step === 2 && (
           <>
             <DialogContentText>
-              Enter the OTP code you received. Each box represents a digit.
+              Ingresa el código OTP que recibiste. Cada recuadro representa un dígito.
             </DialogContentText>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
               {otpValues.map((value, index) => (
@@ -179,13 +179,13 @@ function ForgotPassword({ open, handleClose }) {
         {step === 3 && (
           <>
             <DialogContentText sx={{ mb: 2 }}>
-              Enter your new password and confirm it.
+              Ingresa tu nueva contraseña y confírmala.
             </DialogContentText>
             <TextField
               required
               fullWidth
               type="password"
-              label="New password"
+              label="Nueva contraseña"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
@@ -193,7 +193,7 @@ function ForgotPassword({ open, handleClose }) {
               required
               fullWidth
               type="password"
-              label="Confirm password"
+              label="Confirmar contraseña"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -201,11 +201,11 @@ function ForgotPassword({ open, handleClose }) {
         )}
       </DialogContent>
       <DialogActions sx={{ pb: 3, px: 3 }}>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancelar</Button>
         <Button variant="contained" type="submit">
-          {step === 1 && 'Send Code'}
-          {step === 2 && 'Verify OTP'}
-          {step === 3 && 'Reset'}
+          {step === 1 && 'Enviar Código'}
+          {step === 2 && 'Verificar OTP'}
+          {step === 3 && 'Restablecer'}
         </Button>
       </DialogActions>
     </Dialog>

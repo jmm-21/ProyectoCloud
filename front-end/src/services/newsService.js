@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = '';
+const API_URL = `${import.meta.env.VITE_API_URL}`;
 
 export const getNews = async () => {
     try {
@@ -14,6 +14,10 @@ export const getNews = async () => {
 
 export const getNewsById = async (id) => {
     try {
+        if (!id || id === 'undefined') {
+            console.warn('getNewsById llamado sin ID válido');
+            return null;
+        }
         const response = await axios.get(`${API_URL}/api/noticias/${id}`);
         return response.data;
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useContext, useState } from 'react';
-import { Box, Slider, IconButton, Typography } from '@mui/material';
+import { Box, Slider, IconButton, Typography, CircularProgress, Tooltip } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -7,16 +7,24 @@ import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import CancelIcon from '@mui/icons-material/Cancel';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { PlayerContext } from '../../context/PlayerContext';
+import axios from 'axios';
 
 const AudioPlayer = () => {
   const { currentTrack, isPlaying, playTrack, pauseTrack, stopTrack, volume, changeVolume } = useContext(PlayerContext);
   const [progress, setProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(true); // State to control visibility
+  const [isVisible, setIsVisible] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [quality, setQuality] = useState('medium');
+  const [variants, setVariants] = useState(null);
+  const [loadingVariants, setLoadingVariants] = useState(false);
+  const [bandwidth, setBandwidth] = useState(null);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
   const audioRef = useRef(new Audio());
   const location = useLocation();
 
-  // Stop playback and clear the track if we are not on the /album route
+  // Stop playback when leaving /album route
   useEffect(() => {
     if (!location.pathname.startsWith('/album')) {
       stopTrack();
@@ -25,38 +33,140 @@ const AudioPlayer = () => {
     }
   }, [location.pathname, stopTrack]);
 
-  // Update audio source when the track changes
+  // Detect bandwidth once on mount
   useEffect(() => {
-    if (currentTrack && currentTrack.url) {
-      audioRef.current.src = currentTrack.url;
-      setProgress(0);
-    }
-  }, [currentTrack]);
+    const testBandwidth = async () => {
+      try {
+        const startTime = performance.now();
+        const testSize = 1024 * 1024; // 1MB
+        
+        await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/streaming/bandwidth-test?size=${testSize}`,
+          { withCredentials: true }
+        );
+        
+        const endTime = performance.now();
+        const duration = (endTime - startTime) / 1000;
+        const mbps = (testSize * 8) / (duration * 1000000);
+        
+        setBandwidth(mbps);
+        
+        // Auto-select quality based on bandwidth
+        if (mbps >= 8) setQuality('hq');
+        else if (mbps >= 5) setQuality('high');
+        else if (mbps >= 2) setQuality('medium');
+        else setQuality('low');
+      } catch (err) {
+        console.warn('Bandwidth test failed, using default quality:', err);
+        setQuality('medium');
+      }
+    };
 
-  // Restore player visibility when the track changes
+    testBandwidth();
+  }, []);
+
+  // Fetch variants when track changes
+  useEffect(() => {
+    if (currentTrack && currentTrack.id) {
+      setLoadingVariants(true);
+      const fetchVariants = async () => {
+        try {
+          console.log('🎵 Fetching variants for track ID:', currentTrack.id);
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/api/streaming/track/${currentTrack.id}/info`,
+            { withCredentials: true }
+          );
+          
+          console.log('📊 Full Variants response:', response.data.track);
+          
+          if (response.data.track.streamVariants && Object.keys(response.data.track.streamVariants).length > 0) {
+            console.log('✅ Variants found:', Object.entries(response.data.track.streamVariants));
+            setVariants(response.data.track.streamVariants);
+            
+            // Use variant URL if available
+            if (response.data.track.streamVariants[quality]) {
+              const variantUrl = response.data.track.streamVariants[quality].url;
+              const fullUrl = variantUrl.startsWith('http') ? variantUrl : `${import.meta.env.VITE_API_URL}${variantUrl}`;
+              console.log('🔊 Setting audio source to variant:', fullUrl);
+              audioRef.current.src = fullUrl;
+            } else {
+              // Fallback to first available variant
+              const firstVariant = Object.values(response.data.track.streamVariants)[0];
+              if (firstVariant) {
+                const variantUrl = firstVariant.url;
+                const fullUrl = variantUrl.startsWith('http') ? variantUrl : `${import.meta.env.VITE_API_URL}${variantUrl}`;
+                console.log('🔊 Setting audio source to first variant:', fullUrl);
+                audioRef.current.src = fullUrl;
+              } else if (currentTrack.url) {
+                console.log('⚠️ No variants available, using original URL:', currentTrack.url);
+                audioRef.current.src = currentTrack.url;
+              }
+            }
+          } else {
+            console.warn('⚠️ No streamVariants or empty, using original URL:', currentTrack.url);
+            if (currentTrack.url) {
+              audioRef.current.src = currentTrack.url;
+              setVariants(null);
+            }
+          }
+          
+          setProgress(0);
+          setDuration(0);
+        } catch (err) {
+          console.warn('❌ Error fetching variants:', err.message);
+          console.log('🔊 Fallback: Using original URL:', currentTrack.url);
+          if (currentTrack.url) {
+            audioRef.current.src = currentTrack.url;
+            setVariants(null);
+          }
+        } finally {
+          setLoadingVariants(false);
+        }
+      };
+      
+      fetchVariants();
+    }
+  }, [currentTrack, quality]);
+
+  // Update audio source when quality changes
+  useEffect(() => {
+    if (variants && variants[quality]) {
+      const variantUrl = variants[quality].url;
+      const fullUrl = variantUrl.startsWith('http') ? variantUrl : `${import.meta.env.VITE_API_URL}${variantUrl}`;
+      console.log(`🔄 Cambiando a calidad ${quality}: ${fullUrl}`);
+      
+      audioRef.current.src = fullUrl;
+      if (isPlaying) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(err => console.error('Play error:', err));
+      }
+    }
+  }, [quality, variants]);
+
+  // Show player when track is selected
   useEffect(() => {
     if (currentTrack) {
       setIsVisible(true);
     }
   }, [currentTrack]);
 
-  // Update volume without restarting playback
+  // Update volume
   useEffect(() => {
     audioRef.current.volume = volume;
   }, [volume]);
 
-  // Play or pause according to isPlaying
+  // Play or pause
   useEffect(() => {
     if (currentTrack) {
       if (isPlaying) {
-        audioRef.current.play().catch(err => console.error(err));
+        audioRef.current.play().catch(err => console.error('Play error:', err));
       } else {
         audioRef.current.pause();
       }
     }
   }, [isPlaying, currentTrack]);
 
-  // Update audio progress every 500ms
+  // Update progress every 500ms
   useEffect(() => {
     const interval = setInterval(() => {
       if (audioRef.current && isPlaying) {
@@ -66,12 +176,35 @@ const AudioPlayer = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
+  // Handle metadata loaded
+  useEffect(() => {
+    const audio = audioRef.current;
+    
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    const handleEnded = () => {
+      pauseTrack();
+      setProgress(0);
+    };
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [pauseTrack]);
+
   const handleSliderChange = (e, newValue) => {
     audioRef.current.currentTime = newValue;
     setProgress(newValue);
   };
 
   const formatTime = (seconds) => {
+    if (!seconds || isNaN(seconds)) return '0:00';
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
@@ -85,40 +218,13 @@ const AudioPlayer = () => {
     }
   };
 
-  // Use the tracklist provided in currentTrack.tracklist if it exists, fallback to an empty list
-  const trackList = currentTrack?.tracklist || [];
   const handleSkipNext = () => {
-    if (!currentTrack) return;
-    const currentIndex = trackList.findIndex(t => t.id === currentTrack.id);
-    if (currentIndex !== -1 && currentIndex < trackList.length - 1) {
-      const nextTrack = trackList[currentIndex + 1];
-      playTrack({
-        ...nextTrack,
-        title: nextTrack.title || nextTrack.name,
-        coverImage: nextTrack.coverImage || currentTrack.coverImage || '/assets/images/default-cover.jpg',
-        tracklist: trackList
-      });
-    } else {
-      audioRef.current.currentTime = 0;
-      setProgress(0);
-    }
+    setProgress(0);
   };
-  
+
   const handleSkipPrevious = () => {
-    if (!currentTrack) return;
-    const currentIndex = trackList.findIndex(t => t.id === currentTrack.id);
-    if (currentIndex > 0) {
-      const prevTrack = trackList[currentIndex - 1];
-      playTrack({
-        ...prevTrack,
-        title: prevTrack.title || prevTrack.name,
-        coverImage: prevTrack.coverImage || currentTrack.coverImage || '/assets/images/default-cover.jpg',
-        tracklist: trackList
-      });
-    } else {
-      audioRef.current.currentTime = 0;
-      setProgress(0);
-    }
+    audioRef.current.currentTime = 0;
+    setProgress(0);
   };
 
   const handleCancel = () => {
@@ -126,7 +232,26 @@ const AudioPlayer = () => {
     setIsVisible(false);
   };
 
-  // Show the player only if we're on the /album route, there is a track and it's visible
+  const getQualityColor = (q) => {
+    switch (q) {
+      case 'low':
+        return '#ff9800';
+      case 'medium':
+        return '#2196f3';
+      case 'high':
+        return '#4caf50';
+      case 'hq':
+        return '#f44336';
+      default:
+        return '#757575';
+    }
+  };
+
+  const getBandwidthLabel = () => {
+    if (!bandwidth) return 'Detectando...';
+    return `${bandwidth.toFixed(1)} Mbps`;
+  };
+
   const inReproduction = location.pathname.startsWith('/album');
   const shouldShow = inReproduction && currentTrack && isVisible;
 
@@ -146,62 +271,130 @@ const AudioPlayer = () => {
         zIndex: 1000,
       }}
     >
-      {/* Left: Track info (image, title and artist) */}
-      <Box sx={{ display: 'flex', alignItems: 'center', width: '30%' }}>
+      <audio ref={audioRef} />
+
+      {/* Left: Track info */}
+      <Box sx={{ display: 'flex', alignItems: 'center', width: '25%' }}>
         <img
           src={currentTrack?.coverImage || '/assets/images/default-cover.jpg'}
           alt={currentTrack?.title}
-          style={{ height: '60px', width: '60px', marginRight: '15px' }}
+          style={{ height: '60px', width: '60px', marginRight: '15px', borderRadius: '4px' }}
         />
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {currentTrack?.title}
           </Typography>
-          <Typography variant="caption">
+          <Typography variant="caption" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {currentTrack?.artist}
           </Typography>
         </Box>
       </Box>
 
-      {/* Center: Controls and progress slider */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '40%' }}>
+      {/* Center: Controls and progress */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '50%' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton sx={{ color: 'white' }} onClick={handleSkipPrevious}>
-            <SkipPreviousIcon />
+          <IconButton sx={{ color: 'white' }} onClick={handleSkipPrevious} size="small">
+            <SkipPreviousIcon fontSize="small" />
           </IconButton>
           <IconButton sx={{ color: 'white' }} onClick={handlePlayPause}>
             {isPlaying ? <PauseIcon fontSize="large" /> : <PlayArrowIcon fontSize="large" />}
           </IconButton>
-          <IconButton sx={{ color: 'white' }} onClick={handleSkipNext}>
-            <SkipNextIcon />
+          <IconButton sx={{ color: 'white' }} onClick={handleSkipNext} size="small">
+            <SkipNextIcon fontSize="small" />
           </IconButton>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <Typography variant="caption">{formatTime(progress)}</Typography>
+          <Typography variant="caption" sx={{ minWidth: '30px' }}>{formatTime(progress)}</Typography>
           <Slider
             min={0}
-            max={audioRef.current.duration || 0}
+            max={duration || 0}
             value={progress}
             onChange={handleSliderChange}
-            sx={{ color: 'white', mx: 2 }}
+            sx={{ color: 'white', mx: 1 }}
           />
-          <Typography variant="caption">{formatTime(audioRef.current.duration || 0)}</Typography>
+          <Typography variant="caption" sx={{ minWidth: '30px' }}>{formatTime(duration)}</Typography>
         </Box>
       </Box>
 
-      {/* Right: Volume control and cancel button */}
-      <Box sx={{ display: 'flex', alignItems: 'center', width: '30%', justifyContent: 'flex-end' }}>
-        <VolumeUpIcon />
+      {/* Right: Quality selector, volume, and cancel */}
+      <Box sx={{ display: 'flex', alignItems: 'center', width: '25%', justifyContent: 'flex-end', gap: 1 }}>
+        {/* Quality selector */}
+        {variants && Object.keys(variants).length > 0 && (
+          <Tooltip title={`Calidad: ${quality.toUpperCase()}\nAncho de banda: ${getBandwidthLabel()}`}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: getQualityColor(quality),
+                padding: '4px 8px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                '&:hover': { opacity: 0.8 },
+              }}
+              onClick={() => setShowQualityMenu(!showQualityMenu)}
+            >
+              {loadingVariants ? (
+                <CircularProgress size={16} sx={{ color: 'white', mr: 0.5 }} />
+              ) : (
+                <SettingsIcon sx={{ fontSize: '16px', mr: 0.5 }} />
+              )}
+              <Typography variant="caption" sx={{ fontWeight: 'bold', minWidth: '40px' }}>
+                {quality.toUpperCase()}
+              </Typography>
+            </Box>
+          </Tooltip>
+        )}
+
+        {/* Quality menu */}
+        {showQualityMenu && variants && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '100px',
+              right: '20px',
+              backgroundColor: '#1a1a1a',
+              border: '1px solid #444',
+              borderRadius: '4px',
+              padding: '8px 0',
+              zIndex: 1001,
+            }}
+          >
+            {Object.entries(variants).map(([q, info]) => (
+              <Box
+                key={q}
+                onClick={() => {
+                  setQuality(q);
+                  setShowQualityMenu(false);
+                }}
+                sx={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  backgroundColor: quality === q ? getQualityColor(q) : 'transparent',
+                  '&:hover': { backgroundColor: getQualityColor(q), opacity: 0.8 },
+                }}
+              >
+                <Typography variant="caption">
+                  {q.toUpperCase()} - {info.bitrate}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        {/* Volume */}
+        <VolumeUpIcon sx={{ fontSize: '18px' }} />
         <Slider
           min={0}
           max={1}
           step={0.01}
           value={volume}
           onChange={(e, newValue) => changeVolume(newValue)}
-          sx={{ width: '80px', color: 'white', ml: 1, mr: 2 }}
+          sx={{ width: '60px', color: 'white' }}
         />
-        <IconButton sx={{ color: 'white' }} onClick={handleCancel}>
-          <CancelIcon />
+
+        {/* Cancel */}
+        <IconButton sx={{ color: 'white' }} onClick={handleCancel} size="small">
+          <CancelIcon fontSize="small" />
         </IconButton>
       </Box>
     </Box>

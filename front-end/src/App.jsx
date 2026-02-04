@@ -24,7 +24,7 @@ import { PlayerProvider } from './context/PlayerContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import AudioPlayer from './components/Player/AudioPlayer';
-import ConcertPage from './pages/ConcertPage';
+import ConcertPage from './pages/Concertpage';
 import axios from 'axios';
 
 const theme = createTheme({
@@ -61,7 +61,7 @@ function GoogleAuthHandler() {
             // Obtener la información del usuario usando el token
             const fetchUserData = async () => {
                 try {
-                    const response = await axios.get('/api/auth/me', {
+                    const response = await axios.get(`${import.meta.env.VITE_API_URL}5000/api/auth/me`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }

@@ -12,8 +12,8 @@ UnderSounds is a complete platform for independent music artists and their follo
 - **Connect**: Rate, comment, and follow your favorite artists
 
 ### For Artists
-- **Digital Distribution**: Sube y vende tu música directamente a los fans
-- **Merchandising**: Vende productos relacionados con tu marca
+- **Digital Distribution**: Upload and sell your music directly to fans
+- **Merchandising**: Sell products related to your brand
 - **Custom Profile**: Tell your story and connect with your audience
 - **Analytics**: Data on plays, downloads, and sales
 - **Direct Payments**: Receive income from your sales transparently
@@ -24,9 +24,9 @@ UnderSounds uses the full MERN stack:
 
 - **Frontend**: React.js + Vite
 - **Backend**: Node.js + Express.js
-- **Base de datos**: MongoDB
-- **Autenticación**: JWT + OAuth2 (Google)
-- **Pagos**: Stripe
+- **Data Base**: MongoDB
+- **Authentication**: JWT + OAuth2 (Google)
+- **Payments**: Stripe
 
 ## 🚀 Installation and Setup
 
@@ -41,13 +41,13 @@ UnderSounds uses the full MERN stack:
 
 1. **Clone Repository**:
    ```bash
-   git clone https://github.com/tu-usuario/ProyectoCloud.git
-   cd ProyectoCloud
+   git clone https://github.com/tu-usuario/undersounds.git
+   cd undersounds
    ```
 
 2. **Backend Configuration**:
    ```bash
-   cd back-end
+   cd undersounds-backend
    npm install
    ```
    
@@ -67,7 +67,7 @@ UnderSounds uses the full MERN stack:
 
 3. **Backend Configuration**:
    ```bash
-   cd ../front-end
+   cd ../undersounds-frontend
    npm install
    ```
    
@@ -81,7 +81,7 @@ UnderSounds uses the full MERN stack:
    
    Backend:
    ```bash
-   cd back-end
+   cd undersounds-backend
    node server.js
    ```
    
@@ -99,8 +99,8 @@ UnderSounds uses the full MERN stack:
 ## 📂 Proyect Structure
 
 ```
-ProyectoCloud/
-├── front-end/       # React Application
+undersounds/
+├── undersounds-frontend/       # React Application
 │   ├── src/
 │   │   ├── assets/             # Static assets
 │   │   ├── components/         # Reusable components
@@ -111,7 +111,7 @@ ProyectoCloud/
 │   ├── .env                    # Environment variables
 │   └── package.json            # Frontend dependencies
 │
-├── back-end/        # Node.js/Express Server
+├── undersounds-backend/        # Node.js/Express Server
 │   ├── config/                 # Configurations
 │   ├── controller/             # API Controllers
 │   ├── docs/                   # Swagger Documentation
@@ -144,7 +144,5 @@ ProyectoCloud/
 This project is under the MIT License. See its details on Github.
 
 ---
-
-© 2025 UnderSounds - Platform for independent music.
 
 © 2025 UnderSounds - Platform for independent music.

@@ -1,0 +1,39 @@
+services:
+  backend:
+    build: ./back-end
+    image: marinatraba/undersounds-backend:latest
+    environment:
+      - MONGO_URI=mongodb+srv://marinatrabaa_db_user:qEvgHJaQUihFkvwE@cluster0.keo4ezr.mongodb.net/?appName=Cluster0
+      - BASE_URL=http://backend:5000
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./back-end/.env
+    deploy:
+      replicas: 3 # Empezamos con 3 instancias
+
+  frontend:
+    build: 
+      context: ./front-end
+      args:
+        - VITE_API_URL=http://192.168.1.70:5000
+    image: marinatraba/undersounds-frontend:latest
+    ports:
+      #- "3000:3000"
+      - "8080:8080"
+    depends_on:
+      - backend
+    environment:
+        - REACT_APP_API_URL=http://192.168.1.70:5000
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./back-end/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80" # Ahora entramos por el puerto 80 (el estándar web)
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

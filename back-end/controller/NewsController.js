@@ -7,10 +7,23 @@ class NewsController {
     async createNews(req, res) {
         try {
             const newsData = req.body;
-            // Se crea la instancia usando el factory
+            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+
+            // Si subes una imagen en la creación
+            if (req.file) {
+                newsData.image = `/assets/images/${req.file.filename}`;
+            }
+
             const newsInstance = NewsFactory.createNews(newsData);
             const createdNews = await NewsDAO.createNews(newsInstance);
-            return res.status(201).json(new NewsDTO(createdNews));
+            
+            // Aplicar URL completa al DTO de respuesta
+            const dto = new NewsDTO(createdNews);
+            if (dto.image && dto.image.startsWith('/assets')) {
+                dto.image = `${baseUrl}${dto.image}`;
+            }
+
+            return res.status(201).json(dto);
         } catch (error) {
             return res.status(500).json({ error: `Error al crear la noticia: ${error.message}` });
         }
@@ -20,7 +33,19 @@ class NewsController {
     async getNews(req, res) {
         try {
             const newsList = await NewsDAO.getNews();
-            const newsDTOList = newsList.map(news => NewsFactory.createNewsDTO(news));
+            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+
+            const newsDTOList = newsList.map(news => {
+                // Convertimos a DTO usando tu Factory
+                const dto = NewsFactory.createNewsDTO(news);
+                
+                // Si la noticia tiene imagen y es ruta relativa, le pegamos la base
+                if (dto.image && dto.image.startsWith('/assets')) {
+                    dto.image = `${baseUrl}${dto.image}`;
+                }
+                return dto;
+            });
+
             return res.status(200).json(newsDTOList);
         } catch (error) {
             return res.status(500).json({ error: `Error al obtener las noticias: ${error.message}` });
@@ -35,7 +60,16 @@ class NewsController {
             if (!news) {
                 return res.status(404).json({ error: 'Noticia no encontrada' });
             }
-            return res.status(200).json(NewsFactory.createNewsDTO(news));
+
+            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const dto = NewsFactory.createNewsDTO(news);
+
+            // Corregir URL de la imagen en el detalle
+            if (dto.image && dto.image.startsWith('/assets')) {
+                dto.image = `${baseUrl}${dto.image}`;
+            }
+
+            return res.status(200).json(dto);
         } catch (error) {
             return res.status(500).json({ error: `Error al obtener la noticia con id ${req.params.id}: ${error.message}` });
         }
@@ -50,7 +84,15 @@ class NewsController {
             if (!updatedNews) {
                 return res.status(404).json({ error: 'Noticia no encontrada' });
             }
-            return res.status(200).json(NewsFactory.createNewsDTO(updatedNews));
+            
+            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const dto = NewsFactory.createNewsDTO(updatedNews);
+            
+            if (dto.image && dto.image.startsWith('/assets')) {
+                dto.image = `${baseUrl}${dto.image}`;
+            }
+
+            return res.status(200).json(dto);
         } catch (error) {
             return res.status(500).json({ error: `Error al actualizar la noticia con id ${req.params.id}: ${error.message}` });
         }

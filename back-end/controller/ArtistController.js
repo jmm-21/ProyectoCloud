@@ -6,8 +6,25 @@ class ArtistController {
   async getArtists(req, res) {
     try {
       const artists = await ArtistDAO.getArtists();
-      const artistDTOs = artists.map(artist => new ArtistDTO(artist));
-      res.json(artistDTOs);
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+
+      // Mapeamos los artistas para corregir las URLs antes de enviarlos
+      const processedArtists = artists.map(artist => {
+        const artistObj = artist.toObject ? artist.toObject() : artist;
+
+        // Corregir profileImage
+        if (artistObj.profileImage && artistObj.profileImage.startsWith('/assets')) {
+          artistObj.profileImage = `${baseUrl}${artistObj.profileImage}`;
+        }
+        // Corregir banner
+        if (artistObj.banner && artistObj.banner.startsWith('/assets')) {
+          artistObj.banner = `${baseUrl}${artistObj.banner}`;
+        }
+        
+        return new ArtistDTO(artistObj);
+      });
+
+      res.json(processedArtists);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -20,7 +37,19 @@ class ArtistController {
       if (!artist) {
         return res.status(404).json({ error: 'Artista no encontrado' });
       }
-      res.json(new ArtistDTO(artist));
+
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const artistObj = artist.toObject ? artist.toObject() : artist;
+
+      // Corregir URLs para el detalle del artista
+      if (artistObj.profileImage && artistObj.profileImage.startsWith('/assets')) {
+        artistObj.profileImage = `${baseUrl}${artistObj.profileImage}`;
+      }
+      if (artistObj.banner && artistObj.banner.startsWith('/assets')) {
+        artistObj.banner = `${baseUrl}${artistObj.banner}`;
+      }
+
+      res.json(new ArtistDTO(artistObj));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -29,28 +58,40 @@ class ArtistController {
   async createArtist(req, res) {
     try {
       const artistData = req.body;
-      const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+      // Usamos la variable de entorno para que sea consistente
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      
       if(req.files) {
         if (req.files.profileImage) {
-          artistData.profileImage = `${baseUrl}/assets/images/${req.files.profileImage[0].filename}`;
+          artistData.profileImage = `/assets/images/${req.files.profileImage[0].filename}`;
         }
         if (req.files.banner) {
-          artistData.banner = `${baseUrl}/assets/images/${req.files.banner[0].filename}`;
+          artistData.banner = `/assets/images/${req.files.banner[0].filename}`;
         }
       }
-      const artistEntity = ArtistaFactory.createArtist(artistData);
       
+      const artistEntity = ArtistaFactory.createArtist(artistData);
       const newArtist = await ArtistDAO.createArtist(artistEntity);
+
+      // Antes de responder, aplicamos la baseUrl al DTO para que el Front la vea bien
+      const result = new ArtistDTO(newArtist);
+      if (result.profileImage && result.profileImage.startsWith('/assets')) {
+        result.profileImage = `${baseUrl}${result.profileImage}`;
+      }
+      if (result.banner && result.banner.startsWith('/assets')) {
+        result.banner = `${baseUrl}${result.banner}`;
+      }
 
       res.status(201).json({
         success : true,
-        artista: new ArtistDTO(newArtist)
+        artista: result
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
 
+  // ... (updateArtist y deleteArtist pueden quedarse igual si no devuelven imágenes complejas)
   async updateArtist(req, res) {
     try {
       const numericId = Number(req.params.id);

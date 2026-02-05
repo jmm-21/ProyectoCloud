@@ -7,7 +7,7 @@ const AccountSchema = new mongoose.Schema({
   password: { type: String },
   role: { type: String, enum: ['fan', 'band', 'label'], default: 'fan' },
   profileImage: { type: String, default: '' },
-  bannerImage: { type: String, default: 'http://192.168.1.70:5000/assets/images/default.jpg' },
+  bannerImage: { type: String, default: process.env.BACKEND_URL + '/assets/images/default-banner.jpg' },
   followers: { type: Number, default: 0 },
   bio: { type: String, default: '' },
   socialLinks: {

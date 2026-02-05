@@ -88,7 +88,7 @@ export const refreshToken = async () => {
 };
 
 export const oauthLogin = () => {
-  window.location.href = "https://interprofessional-unexcellently-gabrielle.ngrok-free.dev/api/auth/google";
+  window.location.href = "https://proyectocloud-5.onrender.com/api/auth/google";
 };
 
 

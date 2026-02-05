@@ -12,7 +12,7 @@ servers:
           - "http"
           - "https"
       host:
-        default: "192.168.1.70:5000"
+        default: "https://proyectocloud-5.onrender.com"
 paths:
   /auth/register:
     post:

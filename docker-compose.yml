@@ -16,7 +16,7 @@ services:
     build: 
       context: ./front-end
       args:
-        - VITE_API_URL=http://192.168.1.70:5000
+        - VITE_API_URL=https://tu-proyecto-backend.onrender.com
     image: marinatraba/undersounds-frontend:latest
     ports:
       #- "3000:3000"
@@ -24,7 +24,7 @@ services:
     depends_on:
       - backend
     environment:
-        - REACT_APP_API_URL=http://192.168.1.70:5000
+        - REACT_APP_API_URL=https://tu-proyecto-backend.onrender.com
 
   nginx:
     image: nginx:latest

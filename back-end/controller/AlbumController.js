@@ -168,7 +168,7 @@ class AlbumController {
       
       // Procesar archivo de coverImage si existe
       // Usamos BASE_URL de entorno o construimos dinámicamente basado en el host de la petición
-      const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
 
       if (req.files && req.files.coverImage && req.files.coverImage.length > 0) {
         albumData.coverImage = `${baseUrl}/assets/images/${req.files.coverImage[0].filename}`;

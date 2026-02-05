@@ -11,27 +11,36 @@ const audioConverter = require('../services/AudioConverterService');
 const mongoose = require('mongoose');
 const lifecycleService = require('../services/LifeCycleService');
 
-// Usar rutas relativas para los archivos de música
-const MUSIC_FILES_PATH = path.join(process.cwd(), 'music');
+// Configuración de rutas físicas en el servidor
+const MUSIC_FILES_PATH = path.join(process.cwd(), 'assets', 'music');
+const IMAGES_FILES_PATH = path.join(process.cwd(), 'assets', 'images');
 
 class AlbumController {
   
-  // Función de ayuda estática para evitar problemas de contexto 'this'
+  // Método estático para normalizar URLs y que el reproductor no de 404
   static fixAlbumUrls(album, baseUrl) {
     if (!album) return;
     
-    // 1. Corregir imagen de portada
+    const base = baseUrl.replace(/\/+$/, '');
+
+    // Corrección de imagen de portada
     if (album.coverImage && !album.coverImage.startsWith('http')) {
-      const cleanPath = album.coverImage.startsWith('/') ? album.coverImage : `/${album.coverImage}`;
-      album.coverImage = `${baseUrl}${cleanPath}`;
+      let imgPath = album.coverImage;
+      if (!imgPath.startsWith('/assets')) {
+        imgPath = imgPath.startsWith('/') ? `/assets${imgPath}` : `/assets/${imgPath}`;
+      }
+      album.coverImage = `${base}${imgPath}`;
     }
 
-    // 2. Corregir URLs de las canciones (tracks)
+    // Corrección de cada track
     if (album.tracks && Array.isArray(album.tracks)) {
       album.tracks.forEach(track => {
         if (track.url && !track.url.startsWith('http')) {
-          const cleanPath = track.url.startsWith('/') ? track.url : `/${track.url}`;
-          track.url = `${baseUrl}${cleanPath}`;
+          let trackPath = track.url;
+          if (!trackPath.startsWith('/assets')) {
+            trackPath = trackPath.startsWith('/') ? `/assets${trackPath}` : `/assets/${trackPath}`;
+          }
+          track.url = `${base}${trackPath}`;
         }
       });
     }
@@ -43,7 +52,7 @@ class AlbumController {
       const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
 
       await Promise.all(albums.map(async album => {
-        // --- Lógica de Populate de Artista ---
+        // Lógica de Populate de Artista manual
         if (album.artist && typeof album.artist === 'object' && album.artist._id) {
           try {
             const artistData = await Artist.findById(album.artist._id).select('name bandName profileImage');
@@ -55,8 +64,6 @@ class AlbumController {
             console.warn(`Error poblando artista para álbum ${album._id}: ${err.message}`);
           }
         }
-
-        // --- CORRECCIÓN DE URLS (Usando método estático para evitar error de 'this') ---
         AlbumController.fixAlbumUrls(album, baseUrl);
       }));
       
@@ -77,11 +84,8 @@ class AlbumController {
       }
       
       const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
-
-      // --- CORRECCIÓN DE URLS PARA EL DETALLE ---
       AlbumController.fixAlbumUrls(album, baseUrl);
 
-      // Populate el objeto artist
       if (album.artist && typeof album.artist === 'object' && album.artist._id) {
         try {
           const artistData = await Artist.findById(album.artist._id).select('name bandName profileImage genre bio');
@@ -98,7 +102,6 @@ class AlbumController {
       
       res.json(new AlbumDTO(album));
     } catch (error) {
-      console.error("Error en getAlbumById:", error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -108,55 +111,21 @@ class AlbumController {
       const albumData = req.body;
       
       if (!albumData.artistId) {
-        return res.status(400).json({
-          success: false,
-          error: 'Se requiere el ID del artista (artistId)'
-        });
+        return res.status(400).json({ success: false, error: 'Se requiere artistId' });
       }
       
       let artistIdValue = albumData.artistId;
       
+      // Limpieza profunda de artistId (Regex para MongoDB IDs)
       if (typeof artistIdValue === 'string') {
-        if (artistIdValue.includes('_id') && artistIdValue.includes('ObjectId')) {
-          const matches = artistIdValue.match(/ObjectId\("([^"]+)"\)/);
-          if (matches && matches[1]) {
-            artistIdValue = matches[1];
-          } else {
-            const idMatches = artistIdValue.match(/"([a-f0-9]{24})"/);
-            if (idMatches && idMatches[1]) {
-              artistIdValue = idMatches[1];
-            }
-          }
-        }
-        
-        if (artistIdValue.startsWith('{') && artistIdValue.includes('_id')) {
-          try {
-            const cleanedString = artistIdValue
-              .replace(/([a-zA-Z0-9]+):/g, '"$1":')
-              .replace(/'/g, '"');
-            
-            const objectIdMatch = cleanedString.match(/"_id"\s*:\s*(?:new ObjectId\()?["']([a-f0-9]{24})["']/i);
-            if (objectIdMatch && objectIdMatch[1]) {
-              artistIdValue = objectIdMatch[1];
-            } else {
-              const idMatch = cleanedString.match(/([a-f0-9]{24})/);
-              if (idMatch) {
-                artistIdValue = idMatch[1];
-              }
-            }
-          } catch (e) {
-            console.error('Error parseando objeto artistId:', e);
-          }
-        }
+        const idMatch = artistIdValue.match(/[a-f0-9]{24}/i);
+        if (idMatch) artistIdValue = idMatch[0];
       } else if (typeof artistIdValue === 'object' && artistIdValue._id) {
         artistIdValue = artistIdValue._id.toString();
       }
       
       if (!mongoose.Types.ObjectId.isValid(artistIdValue)) {
-        return res.status(400).json({
-          success: false,
-          error: `ID de artista no válido: "${artistIdValue}"`
-        });
+        return res.status(400).json({ success: false, error: `ID de artista no válido: ${artistIdValue}` });
       }
       
       albumData.artist = new mongoose.Types.ObjectId(artistIdValue);
@@ -192,35 +161,27 @@ class AlbumController {
         }));
       }
       
-      delete albumData.trackTitles;
-      delete albumData.trackDurations;
-      delete albumData.trackAutors;
-      delete albumData.artistName;
-      
-      try {
-        const albumEntity = AlbumFactory.createAlbum(albumData);
-        const newAlbum = await AlbumDao.createAlbum(albumEntity);
-        
-        const artist = await Artist.findById(albumData.artist);
-        if (artist) {
-          artist.albums.push(newAlbum._id);
-          await artist.save();
-        }
-        
-        delete albumData.artistId;
-        
-        // Corregir URLs
-        AlbumController.fixAlbumUrls(newAlbum, baseUrl);
+      // Limpieza de campos temporales antes de ir a Factory
+      const { trackTitles, trackDurations, trackAutors, artistName, artistId, ...cleanData } = albumData;
 
-        res.status(201).json({ 
-          success: true, 
-          message: 'Álbum creado exitosamente', 
-          album: new AlbumDTO(newAlbum) 
-        });
-      } catch (factoryError) {
-        return res.status(400).json({ success: false, error: factoryError.message });
+      const albumEntity = AlbumFactory.createAlbum(cleanData);
+      const newAlbum = await AlbumDao.createAlbum(albumEntity);
+        
+      const artist = await Artist.findById(cleanData.artist);
+      if (artist) {
+        artist.albums.push(newAlbum._id);
+        await artist.save();
       }
+        
+      AlbumController.fixAlbumUrls(newAlbum, baseUrl);
+
+      res.status(201).json({ 
+        success: true, 
+        message: 'Álbum creado exitosamente', 
+        album: new AlbumDTO(newAlbum) 
+      });
     } catch (error) {
+      console.error('Error en createAlbum:', error);
       res.status(500).json({ success: false, error: error.message });
     }
   }
@@ -276,11 +237,10 @@ class AlbumController {
     try {
       const { id } = req.params;
       const format = req.query.format || 'mp3';
-      const trackIdParam = req.query.trackId;
-      const trackId = !isNaN(trackIdParam) ? parseInt(trackIdParam) : trackIdParam;
+      const trackId = req.query.trackId;
             
       if (!['mp3', 'wav', 'flac'].includes(format)) {
-        return res.status(400).json({ error: 'Formato no válido. Use mp3, wav o flac.' });
+        return res.status(400).json({ error: 'Formato inválido' });
       }
       
       let album = await AlbumDao.getAlbumById(id);
@@ -289,25 +249,23 @@ class AlbumController {
       let track = album.tracks.find(t => String(t.id) === String(trackId));
       if (!track) return res.status(404).json({ error: 'Pista no encontrada' });
 
-      if (track.isArchived) {
-        await lifecycleService.restoreTrack(album._id, track.id); 
+      // Extraer nombre de archivo desde la URL guardada
+      const filename = path.basename(track.url);
+      const audioPath = path.join(MUSIC_FILES_PATH, filename);
+
+      // Lógica de Ciclo de Vida: Si no existe en disco, restaurar
+      if (!fs.existsSync(audioPath)) {
+          console.log(`[ALERTA] Restaurando archivo desde el servicio de ciclo de vida: ${filename}`);
+          await lifecycleService.restoreTrack(album._id, track.id);
       }
 
       track.lastAccessed = new Date();
       await album.save(); 
             
-      const urlParts = track.url.split('/');
-      const filename = urlParts[urlParts.length - 1];
-      const audioPath = path.join(MUSIC_FILES_PATH, filename);
-
-      if (!fs.existsSync(audioPath)) {
-          await lifecycleService.restoreTrack(album._id, track.id);
-      }
-
       const safeTrackTitle = track.title.replace(/[\/\\:*?"<>|]/g, '_');
       
       if (!fs.existsSync(audioPath)) {
-        return res.status(404).json({ error: 'Archivo no encontrado físicamente' });
+        return res.status(404).json({ error: 'El archivo físico no está disponible' });
       }
       
       if (format === 'mp3' && audioPath.toLowerCase().endsWith('.mp3')) {
@@ -315,19 +273,19 @@ class AlbumController {
       }
       
       const tempDir = os.tmpdir();
-      const outputPath = path.join(tempDir, `${track.title}-${Date.now()}.${format}`);
+      const outputPath = path.join(tempDir, `${safeTrackTitle}-${Date.now()}.${format}`);
       
       try {
         await audioConverter.convertAudio(audioPath, outputPath, format);
         return res.download(outputPath, `${safeTrackTitle}.${format}`, (err) => {
-          fs.unlink(outputPath, () => {});
+          if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
         });
-      } catch (conversionError) {
-        return res.status(500).json({ error: 'Error al convertir el archivo' });
+      } catch (err) {
+        res.status(500).json({ error: 'Error en la conversión de audio' });
       }
       
     } catch (error) {
-      res.status(500).json({ error: 'Error al procesar la descarga', details: error.message });
+      res.status(500).json({ error: error.message });
     }
   }
   
@@ -338,7 +296,7 @@ class AlbumController {
             
       const album = await AlbumDao.getAlbumById(id);
       if (!album || !album.tracks || album.tracks.length === 0) {
-        return res.status(404).json({ error: 'Álbum no encontrado o vacío' });
+        return res.status(404).json({ error: 'Álbum no encontrado o sin pistas' });
       }
       
       const safeAlbumTitle = album.title.replace(/[\/\\:*?"<>|]/g, '_');
@@ -346,15 +304,12 @@ class AlbumController {
       await fs.promises.mkdir(tempDir, { recursive: true });
       
       const conversionPromises = album.tracks.map(async (track) => {
-        if (!track.url) return;
-        
-        const urlParts = track.url.split('/');
-        const filename = urlParts[urlParts.length - 1];
+        const filename = path.basename(track.url);
         const audioPath = path.join(MUSIC_FILES_PATH, filename);
         
         if (!fs.existsSync(audioPath)) return;
         
-        const outputPath = path.join(tempDir, `${track.title || `track-${track.id}`}.${format}`);
+        const outputPath = path.join(tempDir, `${track.title.replace(/[\/\\:*?"<>|]/g, '_')}.${format}`);
         
         if (format === 'mp3' && audioPath.toLowerCase().endsWith('.mp3')) {
           await fs.promises.copyFile(audioPath, outputPath);
@@ -369,10 +324,10 @@ class AlbumController {
       const output = fs.createWriteStream(zipPath);
       const archive = archiver('zip', { zlib: { level: 9 } });
       
-      output.on('close', function() {
+      output.on('close', () => {
         res.download(zipPath, `${safeAlbumTitle}.zip`, (err) => {
-          fs.unlink(zipPath, () => {});
-          fs.rm(tempDir, { recursive: true, force: true }, () => {});
+          if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+          fs.rmSync(tempDir, { recursive: true, force: true });
         });
       });
       
@@ -382,7 +337,7 @@ class AlbumController {
       archive.finalize();
         
     } catch (error) {
-      res.status(500).json({ error: 'Error al procesar el álbum', details: error.message });
+      res.status(500).json({ error: 'Error al procesar el ZIP del álbum', details: error.message });
     }
   }
 }

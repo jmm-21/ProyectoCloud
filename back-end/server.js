@@ -61,13 +61,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Servir assets: Intenta primero desde carpeta local (Docker), si no, busca en frontend (Local)
-app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
-app.use('/assets', express.static(path.join(__dirname, '../front-end/src/assets')));
-app.use('/assets/images', express.static(path.join(__dirname, '../front-end/src/images')));
+// 1. Definimos la ruta base de assets (suponiendo que este archivo está en la raíz de /back-end)
+const assetsPath = path.join(__dirname, 'assets');
 
-app.use('/assets/music', express.static(path.join(__dirname, './music')));
-app.use('/assets/music/variants', express.static(path.join(__dirname, './music/variants')));
+// 2. Servir TODA la carpeta assets bajo el prefijo /assets
+// Esto cubrirá automáticamente /assets/images y /assets/music
+app.use('/assets', express.static(assetsPath));
+
+app.use('/assets/music', express.static(path.join(assetsPath, 'music')));
+app.use('/assets/images', express.static(path.join(assetsPath, 'images')));
 
 // Middleware de diagnóstico para ver qué imágenes faltan
 app.use('/assets', (req, res, next) => {

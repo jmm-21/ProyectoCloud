@@ -17,10 +17,11 @@ const MUSIC_FILES_PATH = path.join(process.cwd(), 'music');
 class AlbumController {
   async getAlbums(req, res) {
     try {
-      // Modificar para hacer populate del campo artist, seleccionando solo campos necesarios
       const albums = await AlbumDao.getAlbums();
-      // Populate los objetos de artista
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+
       await Promise.all(albums.map(async album => {
+        // --- Lógica de Populate de Artista (Tu código original) ---
         if (album.artist && typeof album.artist === 'object' && album.artist._id) {
           try {
             const artistData = await Artist.findById(album.artist._id).select('name bandName profileImage');
@@ -31,6 +32,21 @@ class AlbumController {
           } catch (err) {
             console.warn(`Error poblando artista para álbum ${album._id}: ${err.message}`);
           }
+        }
+
+        // --- CORRECCIÓN DE URLS ---
+        // 1. Corregir imagen de portada
+        if (album.coverImage && album.coverImage.startsWith('/assets')) {
+          album.coverImage = `${baseUrl}${album.coverImage}`;
+        }
+
+        // 2. Corregir URLs de las canciones (tracks)
+        if (album.tracks && Array.isArray(album.tracks)) {
+          album.tracks.forEach(track => {
+            if (track.url && track.url.startsWith('/assets')) {
+              track.url = `${baseUrl}${track.url}`;
+            }
+          });
         }
       }));
       
@@ -45,13 +61,27 @@ class AlbumController {
   async getAlbumById(req, res) {
     try {
       const { id } = req.params;
-      // Modificar para hacer populate del campo artist
       const album = await AlbumDao.getAlbumById(id);
       if (!album) {
         return res.status(404).json({ error: 'Album not found' });
       }
       
-      // Populate el objeto artist si existe
+      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+
+      // --- CORRECCIÓN DE URLS PARA EL DETALLE ---
+      if (album.coverImage && album.coverImage.startsWith('/assets')) {
+        album.coverImage = `${baseUrl}${album.coverImage}`;
+      }
+
+      if (album.tracks && Array.isArray(album.tracks)) {
+        album.tracks.forEach(track => {
+          if (track.url && track.url.startsWith('/assets')) {
+            track.url = `${baseUrl}${track.url}`;
+          }
+        });
+      }
+
+      // Populate el objeto artist (Tu código original)
       if (album.artist && typeof album.artist === 'object' && album.artist._id) {
         try {
           const artistData = await Artist.findById(album.artist._id).select('name bandName profileImage genre bio');

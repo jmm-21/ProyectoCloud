@@ -16,8 +16,10 @@ const MUSIC_FILES_PATH = path.join(process.cwd(), 'music');
 
 class AlbumController {
   
-  // Función privada interna para corregir URLs y evitar el error del reproductor
-  _fixUrls(album, baseUrl) {
+  // Función de ayuda estática para evitar problemas de contexto 'this'
+  static fixAlbumUrls(album, baseUrl) {
+    if (!album) return;
+    
     // 1. Corregir imagen de portada
     if (album.coverImage && !album.coverImage.startsWith('http')) {
       const cleanPath = album.coverImage.startsWith('/') ? album.coverImage : `/${album.coverImage}`;
@@ -54,8 +56,8 @@ class AlbumController {
           }
         }
 
-        // --- CORRECCIÓN DE URLS ---
-        this._fixUrls(album, baseUrl);
+        // --- CORRECCIÓN DE URLS (Usando método estático para evitar error de 'this') ---
+        AlbumController.fixAlbumUrls(album, baseUrl);
       }));
       
       const albumDTOs = albums.map(album => new AlbumDTO(album));
@@ -77,9 +79,9 @@ class AlbumController {
       const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
 
       // --- CORRECCIÓN DE URLS PARA EL DETALLE ---
-      this._fixUrls(album, baseUrl);
+      AlbumController.fixAlbumUrls(album, baseUrl);
 
-      // Populate el objeto artist (Tu código original)
+      // Populate el objeto artist
       if (album.artist && typeof album.artist === 'object' && album.artist._id) {
         try {
           const artistData = await Artist.findById(album.artist._id).select('name bandName profileImage genre bio');
@@ -207,8 +209,8 @@ class AlbumController {
         
         delete albumData.artistId;
         
-        // Corregir URLs para el DTO de respuesta
-        this._fixUrls(newAlbum, baseUrl);
+        // Corregir URLs
+        AlbumController.fixAlbumUrls(newAlbum, baseUrl);
 
         res.status(201).json({ 
           success: true, 
@@ -233,7 +235,7 @@ class AlbumController {
       }
       
       const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
-      this._fixUrls(updatedAlbum, baseUrl);
+      AlbumController.fixAlbumUrls(updatedAlbum, baseUrl);
       
       res.json(new AlbumDTO(updatedAlbum));
     } catch (error) {

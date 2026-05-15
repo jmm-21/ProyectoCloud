@@ -7,7 +7,7 @@ const MerchandisingController = {
   async getAllMerch(req, res) {
     try {
       const merch = await MerchDAO.getAllMerch();
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       // Mapeamos para añadir la URL completa a las imágenes
       const processedMerch = merch.map(item => {
@@ -31,7 +31,7 @@ const MerchandisingController = {
     try {
       const type = parseInt(req.params.type);
       const merch = await MerchDAO.getBasicMerchByType(type);
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       const processedMerch = merch.map(item => {
         const itemObj = item.toObject ? item.toObject() : item;
@@ -52,7 +52,7 @@ const MerchandisingController = {
     try {
       const artistId = req.params.artistId;
       const merch = await MerchDAO.getByArtistId(artistId);
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       const processedMerch = merch.map(item => {
         const itemObj = item.toObject ? item.toObject() : item;
@@ -82,7 +82,7 @@ const MerchandisingController = {
       }
 
       const savedMerch = await MerchFactory.createMerch(merchData);
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       
       // Para la respuesta inmediata, añadimos la URL completa
       const result = new MerchDTO(savedMerch);
@@ -108,7 +108,7 @@ const MerchandisingController = {
         return res.status(404).json({ message: 'Producto no encontrado XD' });
       }
 
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       const itemObj = merch.toObject ? merch.toObject() : merch;
 
       if (itemObj.image && itemObj.image.startsWith('/assets')) {

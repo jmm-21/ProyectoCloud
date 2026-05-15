@@ -61,7 +61,7 @@ function GoogleAuthHandler() {
             // Obtener la información del usuario usando el token
             const fetchUserData = async () => {
                 try {
-                    const response = await axios.get(`${import.meta.env.VITE_API_URL}5000/api/auth/me`, {
+                    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }

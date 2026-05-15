@@ -27,10 +27,10 @@ const app = express();
 const Album = require('./model/models/Album');
 
 // Definir la URL base para recursos estáticos y documentación
-const BASE_URL = process.env.BASE_URL || 'http://0.0.0.0:5000';
+const BASE_URL = process.env.BASE_URL || 'http://0.0.0.0:8081';
 
 app.use(cors({
-  origin: ['http://localhost:8080', process.env.FRONTEND_URL],
+  origin: ['http://localhost:8081', process.env.FRONTEND_URL],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));

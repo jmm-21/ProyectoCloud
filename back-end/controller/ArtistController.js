@@ -6,7 +6,7 @@ class ArtistController {
   async getArtists(req, res) {
     try {
       const artists = await ArtistDAO.getArtists();
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       // Mapeamos los artistas para corregir las URLs antes de enviarlos
       const processedArtists = artists.map(artist => {
@@ -38,7 +38,7 @@ class ArtistController {
         return res.status(404).json({ error: 'Artista no encontrado' });
       }
 
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       const artistObj = artist.toObject ? artist.toObject() : artist;
 
       // Corregir URLs para el detalle del artista
@@ -59,7 +59,7 @@ class ArtistController {
     try {
       const artistData = req.body;
       // Usamos la variable de entorno para que sea consistente
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       
       if(req.files) {
         if (req.files.profileImage) {

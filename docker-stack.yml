@@ -29,7 +29,7 @@ services:
     image: marinatraba/undersounds-backend:latest
     environment:
       - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/undersounds?replicaSet=rs0
-      - BASE_URL=http://backend:5000
+      - BASE_URL=http://localhost:8081
     expose:
       - "5000"
     env_file:
@@ -63,6 +63,8 @@ services:
       - "8083:8080"
     environment:
       - REACT_APP_API_URL=http://localhost:8081
+    env_file:
+      - ./front-end/.env
     deploy:
       replicas: 1
       restart_policy:

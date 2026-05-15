@@ -7,7 +7,7 @@ class NewsController {
     async createNews(req, res) {
         try {
             const newsData = req.body;
-            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
             // Si subes una imagen en la creación
             if (req.file) {
@@ -33,7 +33,7 @@ class NewsController {
     async getNews(req, res) {
         try {
             const newsList = await NewsDAO.getNews();
-            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
             const newsDTOList = newsList.map(news => {
                 // Convertimos a DTO usando tu Factory
@@ -61,7 +61,7 @@ class NewsController {
                 return res.status(404).json({ error: 'Noticia no encontrada' });
             }
 
-            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
             const dto = NewsFactory.createNewsDTO(news);
 
             // Corregir URL de la imagen en el detalle
@@ -85,7 +85,7 @@ class NewsController {
                 return res.status(404).json({ error: 'Noticia no encontrada' });
             }
             
-            const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+            const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
             const dto = NewsFactory.createNewsDTO(updatedNews);
             
             if (dto.image && dto.image.startsWith('/assets')) {

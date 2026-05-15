@@ -49,7 +49,7 @@ class AlbumController {
   async getAlbums(req, res) {
     try {
       const albums = await AlbumDao.getAlbums();
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       await Promise.all(albums.map(async album => {
         // Lógica de Populate de Artista manual
@@ -83,7 +83,7 @@ class AlbumController {
         return res.status(404).json({ error: 'Album not found' });
       }
       
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       AlbumController.fixAlbumUrls(album, baseUrl);
 
       if (album.artist && typeof album.artist === 'object' && album.artist._id) {
@@ -136,7 +136,7 @@ class AlbumController {
       albumData.cassettes = albumData.cassettes === 'true' || albumData.cassettes === true;
       albumData.destacado = albumData.destacado === 'true' || albumData.destacado === true;
       
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
 
       if (req.files && req.files.coverImage && req.files.coverImage.length > 0) {
         albumData.coverImage = `/assets/images/${req.files.coverImage[0].filename}`;
@@ -195,7 +195,7 @@ class AlbumController {
         return res.status(404).json({ error: 'Album not found' });
       }
       
-      const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+      const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
       AlbumController.fixAlbumUrls(updatedAlbum, baseUrl);
       
       res.json(new AlbumDTO(updatedAlbum));

@@ -43,7 +43,7 @@ class AccountController {
 
   // Función privada interna para corregir URLs (para no repetir código)
   _applyBaseUrl(dto) {
-    const baseUrl = process.env.BASE_URL || `https://proyectocloud-5.onrender.com`;
+    const baseUrl = process.env.BASE_URL || `http://localhost:8081`;
     
     if (dto.profileImage && dto.profileImage.startsWith('/assets')) {
       dto.profileImage = `${baseUrl}${dto.profileImage}`;

@@ -1,19 +1,34 @@
 version: '3.9'
 
 services:
-  mongo:
+  mongo1:
     image: mongo:latest
-    ports:
-      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
-      - mongo_data:/data/db
+      - mongo1_data:/data/db
+    networks:
+      - appnet
+
+  mongo2:
+    image: mongo:latest
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo2_data:/data/db
+    networks:
+      - appnet
+
+  mongo3:
+    image: mongo:latest
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo3_data:/data/db
     networks:
       - appnet
 
   backend:
     image: marinatraba/undersounds-backend:latest
     environment:
-      - MONGO_URI=mongodb://mongo:27017/undersounds
+      - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/undersounds?replicaSet=rs0
       - BASE_URL=http://backend:5000
     expose:
       - "5000"
@@ -33,7 +48,10 @@ services:
     ports:
       - "8081:80"
     deploy:
-      replicas: 1
+      replicas: 3  # <--- Ahora tienes 3 entradas trabajando juntas
+      update_config:
+        parallelism: 1 # si hay alguna actualizacion, se hace de una en una para evitar downtime
+        delay: 10s # espera 10 segundos entre cada actualizacion para asegurar que el servicio este estable
       restart_policy:
         condition: on-failure
     networks:
@@ -57,5 +75,6 @@ networks:
     driver: overlay
 
 volumes:
-  mongo_data:
-    driver: local
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:

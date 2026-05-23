@@ -186,3 +186,35 @@ Esta capa es fundamental para:
 ### 4. Backend → Replica Set de MongoDB
 
 La réplica del backend que recibe la petición se conecta al Replica Set `rs0` usando la cadena de conexión con los 3 nodos. Al conectarse al Replica Set en lugar de a una instancia única, la aplicación obtiene **tolerancia a fallos**: si el primario cae, los otros nodos eligen uno nuevo y la aplicación sigue funcionando sin interrupción.
+
+---
+
+## CI/CD
+
+### 1. CI: Continuous Integration
+
+Usaremos GitHub Actions.
+
+Sirve para asegurar que el codigo compila y es perfectamente válido antes de que rompa el entorno de producción o el trabajo de tus compañeros.
+
+Corre en una máquina virtual de GitHub completamente limpia y desde cero, ejecuta npm install. Te avisa a ti antes de que afecte a producción.
+
+Si te dejaste una variable mal declarada, rompiste un tipo de dato o hay un error de sintaxis grave, el build fallará y sabrás que linea reparar.
+
+En nuestro caso, que no tenemos tests, solo revisa si el proyecto no está roto y tiene todo lo que necesita.
+
+Se ejecuta cada vez que hacemos un pull.
+
+### 2. CD: Continuous Deployment
+
+Proceso que toma tu código aprobado por el CI, lo empaqueta y lo sube a Internet para que tus usuarios puedan usarlo, sin que tengas que hacer nada.
+
+Toma el código limpio, elimina archivos de desarrollo que no se necesitan en Internet y prepara los archivos finales de produccion.
+
+Se conecta al servidor: Abre una conexión segura con tu hosting (Render, AWS o tu propio servidor Linux).
+
+Sube los archivos y reinicia la aplicación.
+
+Por último veirfica que esté viva.
+
+Al hacer git push se verifica el codigo con el CI, si se aprueba el CD detecta el cambio y lanza la nueva version.

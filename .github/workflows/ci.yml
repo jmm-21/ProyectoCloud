@@ -22,7 +22,7 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Cambia a tu versión
+          node-version: '24' # Cambia a tu versión
 
       # Paso C: Instalar las dependencias de tu proyecto
       - name: Instalar dependencias

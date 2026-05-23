@@ -1,0 +1,41 @@
+name: Pipeline de Mi Proyecto
+
+# 1. ¿Cuándo se va a ejecutar?
+on:
+  push:
+    branches: [ "main", "master" ] # Se activa cuando subes código a estas ramas
+  pull_request:
+    branches: [ "main", "master" ] # O cuando abres un Pull Request
+
+# 2. ¿Qué va a hacer?
+jobs:
+  construir-y-probar:
+    runs-on: ubuntu-latest # GitHub te presta una máquina virtual con Linux gratis
+
+    steps:
+      # Paso A: Clonar tu código dentro de la máquina virtual de GitHub
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # Paso B: Configurar el entorno (Borra los que NO uses y deja el tuyo)
+      # --- SI TU PROYECTO ES DE NODE.JS ---
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Cambia a tu versión
+
+      # --- SI TU PROYECTO ES DE PYTHON ---
+      # - name: Configurar Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.11'
+
+      # Paso C: Instalar las dependencias de tu proyecto
+      - name: Instalar dependencias
+        run: |
+          npm install
+          # Si usas Python sería: pip install -r requirements.txt
+
+      # Paso D: Ejecutar tus pruebas (Si no tienes tests todavía, puedes borrar esto)
+      - name: Correr pruebas
+        run: npm test

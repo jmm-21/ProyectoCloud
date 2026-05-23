@@ -88,6 +88,21 @@ No hay conflicto gracias al **Routing Mesh** de Docker Swarm:
 - **Zero Downtime Updates:** Al actualizar `nginx.conf`, Swarm reinicia las réplicas de una en una; las demás siguen activas.
 - **Resiliencia:** Si una réplica falla, el Routing Mesh deja de enviarle tráfico al instante y Swarm levanta un sustituto.
 
+**El único detalle externo: Tu DNS**
+
+Como Swarm abre el puerto en todos los nodos, la única precaución que debes tomar es de cara al exterior (en tu proveedor de dominio como Cloudflare, GoDaddy, etc.).
+
+En lugar de apuntar tu dominio (mi-app.com) a la IP de un solo nodo, debes configurar múltiples registros de tipo A apuntando a las IPs de todos tus nodos de Swarm:
+
+mi-app.com ➔ A ➔ IP_NODO_1
+   
+mi-app.com ➔ A ➔ IP_NODO_2
+   
+mi-app.com ➔ A ➔ IP_NODO_3
+   
+Si el Nodo 1 explota físicamente, los navegadores de los usuarios intentarán conectar con la IP del Nodo 2 o Nodo 3, donde la malla de Swarm recibirá el tráfico y se lo entregará 
+a los contenedores de Nginx que queden vivos. ¡Redundancia total sin instalar nada extra!
+
 ---
 
 ## MongoDB: Robustez con Replica Set

@@ -24,18 +24,8 @@ jobs:
         with:
           node-version: '20' # Cambia a tu versión
 
-      # --- SI TU PROYECTO ES DE PYTHON ---
-      # - name: Configurar Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: '3.11'
-
       # Paso C: Instalar las dependencias de tu proyecto
       - name: Instalar dependencias
         run: |
           npm install
           # Si usas Python sería: pip install -r requirements.txt
-
-      # Paso D: Ejecutar tus pruebas (Si no tienes tests todavía, puedes borrar esto)
-      - name: Correr pruebas
-        run: npm test

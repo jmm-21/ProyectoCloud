@@ -680,6 +680,4 @@ Shard 1 Replica Set
 
 **Para 25 usuarios iniciales:** Replica Set es suficiente.
 **Para 1000+ usuarios:** Evalúa Sharding.
----
 
-![Arquitectura de la API](./Undersounds-copia.drawio.png)

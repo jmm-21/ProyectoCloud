@@ -218,7 +218,7 @@ Si te dejaste una variable mal declarada, rompiste un tipo de dato o hay un erro
 
 En nuestro caso, que no tenemos tests, solo revisa si el proyecto no está roto y tiene todo lo que necesita.
 
-Se ejecuta cada vez que hacemos un pull.
+Se ejecuta cada vez que hacemos un push.
 
 ### 2. CD: Continuous Deployment
 

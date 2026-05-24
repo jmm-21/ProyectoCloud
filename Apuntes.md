@@ -286,33 +286,6 @@ Un pipeline de integración y despliegue continuo automatiza:
 | **Rollback automático** | Si el health check falla, Swarm vuelve a versión anterior |
 | **Escalabilidad** | Mismo pipeline para 3 réplicas o 100 |
 
-### Flujo de Trabajo
-
-[ Tráfico Usuario ] -> [ Enrutador/Balanceador ]
-
-|
-
-|---> [ Entorno Azul ] (Versión Actual v1.0)
-
-|---> [ Entorno Verde ] (Nueva Versión v2.0 - En Pruebas)
-
-Despliegue Seguro: La nueva versión del código se despliega exclusivamente en el entorno que está libre (Verde).
-
-Fase de Pruebas: Se realizan las verificaciones necesarias en el entorno Verde sin afectar la experiencia de los usuarios reales.
-
-Cambio de Tráfico (Switch): Una vez validada la estabilidad, el enrutador o balanceador de carga redirige el tráfico hacia el entorno Verde de forma instantánea.
-
-Reserva: El entorno Azul pasa a quedar en espera para el próximo ciclo de actualización.
-
-## Beneficios Clave:
-
-1. Cero Tiempo de Inactividad (Zero Downtime): El cambio de tráfico entre entornos es casi instantáneo, eliminando las pantallas de mantenimiento para el usuario.
-
-2. Rollback Inmediato y Seguro: Si se detecta un error crítico tras el lanzamiento, revertir el cambio es tan simple como redirigir el tráfico de vuelta al entorno anterior (Azul), el cual permanece intacto.
-
-3. Pruebas en Entornos Reales: Permite validar el comportamiento del software en una infraestructura idéntica a la de producción antes de abrirla al público.
-
-
 ## Patrones de Red y Resiliencia
 
 ### El Problema: ¿Qué pasa si una réplica es lenta?
@@ -554,6 +527,32 @@ Mantenemos dos entornos de producción idénticos pero aislados:
 1. Entorno Azul (Blue): Es el entorno que está actualmente activo y recibiendo el 100% del tráfico de los usuarios reales.
 
 2. Entorno Verde (Green): Es el entorno de reserva (en espera), donde se despliega y prueba la nueva versión del software de forma segura antes de pasar a producción.Para cambios críticos o si quieres rollback instantáneo.
+
+### Flujo de Trabajo
+
+[ Tráfico Usuario ] -> [ Enrutador/Balanceador ]
+
+|
+
+|---> [ Entorno Azul ] (Versión Actual v1.0)
+
+|---> [ Entorno Verde ] (Nueva Versión v2.0 - En Pruebas)
+
+Despliegue Seguro: La nueva versión del código se despliega exclusivamente en el entorno que está libre (Verde).
+
+Fase de Pruebas: Se realizan las verificaciones necesarias en el entorno Verde sin afectar la experiencia de los usuarios reales.
+
+Cambio de Tráfico (Switch): Una vez validada la estabilidad, el enrutador o balanceador de carga redirige el tráfico hacia el entorno Verde de forma instantánea.
+
+Reserva: El entorno Azul pasa a quedar en espera para el próximo ciclo de actualización.
+
+## Beneficios Clave:
+
+1. Cero Tiempo de Inactividad (Zero Downtime): El cambio de tráfico entre entornos es casi instantáneo, eliminando las pantallas de mantenimiento para el usuario.
+
+2. Rollback Inmediato y Seguro: Si se detecta un error crítico tras el lanzamiento, revertir el cambio es tan simple como redirigir el tráfico de vuelta al entorno anterior (Azul), el cual permanece intacto.
+
+3. Pruebas en Entornos Reales: Permite validar el comportamiento del software en una infraestructura idéntica a la de producción antes de abrirla al público.
 
 ```
 ANTES:

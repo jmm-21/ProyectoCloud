@@ -109,7 +109,13 @@ app.use('/api/noticias', noticiasMusica);
 app.use('/api/merchandising', MerchRoutes);
 app.use('/api/streaming', StreamingRoutes);
 
+app.get('/', (req, res, next) => {
+    console.log("¡TRAFICO REAL RECONOCIDO! Ruta raíz accedida.");
+    next(); // Le dice a Express: "Ya hice mi log, ahora sigue bajando"
+});
+
 app.use(express.static(path.join(__dirname, 'view')));
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'view', 'index.html'));
 });

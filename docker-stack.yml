@@ -30,12 +30,18 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo1:27017,mongo2:27017,mongo3:27017/undersounds?replicaSet=rs0
       - BASE_URL=http://localhost:8081
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     env_file:
       - ./back-end/.env
     deploy:
       replicas: 3
+      #ROLLING UPDATE PARA BACKEND
+      update_config:
+        parallelism: 1           # Actualiza 1 réplica a la vez
+        delay: 10s               # Espera 10s entre réplicas
+        failure_action: rollback # Si falla, vuelve a versión anterior
+        order: start-first       # Primero arranca el nuevo, luego apaga el viejo
       restart_policy:
         condition: on-failure
     networks:

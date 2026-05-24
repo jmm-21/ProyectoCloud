@@ -271,3 +271,7 @@ Reserva: El entorno Azul pasa a quedar en espera para el próximo ciclo de actua
 2. Rollback Inmediato y Seguro: Si se detecta un error crítico tras el lanzamiento, revertir el cambio es tan simple como redirigir el tráfico de vuelta al entorno anterior (Azul), el cual permanece intacto.
 
 3. Pruebas en Entornos Reales: Permite validar el comportamiento del software en una infraestructura idéntica a la de producción antes de abrirla al público.
+
+---
+
+![Arquitectura de la API](./Undersounds-copia.drawio.png)

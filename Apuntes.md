@@ -236,6 +236,53 @@ Al hacer git push se verifica el codigo con el CI, si se aprueba el CD detecta e
 
 ---
 
+## CI/CD Pipeline
+
+### ¿Por qué es importante?
+
+Un pipeline de integración y despliegue continuo automatiza:
+1. Las pruebas cada vez que haces push a GitHub.
+2. La construcción de la imagen Docker.
+3. El push a un registro (Docker Hub, ghcr.io).
+4. El despliegue automático en Swarm.
+
+**Sin CI/CD:** Desplegar requiere pasos manuales, errores humanos, downtime.
+**Con CI/CD:** Cada commit pasa por pruebas y se despliega automáticamente si es válido.
+
+### Flujo con GitHub Actions
+
+```
+1. Developer hace push a GitHub
+   │
+   ▼ (Trigger webhook)
+2. GitHub Actions inicia workflow
+   │
+   ├─ Ejecuta tests (npm test)
+   │
+   ├─ Build imagen Docker
+   │  └─ docker build -t ghcr.io/usuario/undersounds-backend:latest .
+   │
+   ├─ Push a registro (GHCR)
+   │  └─ docker push ghcr.io/usuario/undersounds-backend:latest
+   │
+   ▼
+3. SSH a nodo Swarm + actualiza servicio
+   └─ docker pull + docker service update
+   
+   ▼
+4. Swarm hace Rolling Update (sin downtime)
+   └─ Reinicia réplicas una a una
+```
+### Ventajas de este enfoque
+
+| Ventaja | Impacto |
+|---|---|
+| **Automatización** | 0 pasos manuales; reduce errores |
+| **Rapidez** | Deploy en < 5 minutos |
+| **Trazabilidad** | Cada deploy enlazado a commit |
+| **Rollback automático** | Si el health check falla, Swarm vuelve a versión anterior |
+| **Escalabilidad** | Mismo pipeline para 3 réplicas o 100 |
+
 ## BLUE-GREEN
 
 Para garantizar la alta disponibilidad de la aplicación y minimizar los riesgos durante los lanzamientos de nuevas versiones.
@@ -271,3 +318,365 @@ Reserva: El entorno Azul pasa a quedar en espera para el próximo ciclo de actua
 2. Rollback Inmediato y Seguro: Si se detecta un error crítico tras el lanzamiento, revertir el cambio es tan simple como redirigir el tráfico de vuelta al entorno anterior (Azul), el cual permanece intacto.
 
 3. Pruebas en Entornos Reales: Permite validar el comportamiento del software en una infraestructura idéntica a la de producción antes de abrirla al público.
+
+
+## Patrones de Red y Resiliencia
+
+### El Problema: ¿Qué pasa si una réplica es lenta?
+
+En una arquitectura distribuida, un solo componente lento puede "contagiar" el sistema entero.
+
+**Ejemplo sin resiliencia:**
+```
+Cliente 1 → Backend 1 (2ms)      ✓ Rápido
+Cliente 2 → Backend 2 (2ms)      ✓ Rápido
+Cliente 3 → Backend 3 (500ms)    ✗ Lento (base de datos no responde)
+            ↓
+Timeout del Cliente 3 (30s)
+↓
+Nginx aguarda a Backend 3 durante 30s
+↓
+Socket de Nginx agotado → Otros clientes se quedan sin respuesta
+↓
+"Backend crashed" (en realidad, Nginx está saturado esperando Backend 3)
+```
+
+### Solución: Patrones de Resiliencia
+
+#### 1. **Circuit Breaker (Disyuntor)**
+
+Evita que un servicio caído demore a todos los demás.
+
+```nginx
+# En Nginx: Si Backend 3 no responde, Nginx para enviarle tráfico
+# (en lugar de esperar 30s cada vez)
+
+upstream backend_servers {
+    server backend1:3000 max_fails=3 fail_timeout=10s;
+    server backend2:3000 max_fails=3 fail_timeout=10s;
+    server backend3:3000 max_fails=3 fail_timeout=10s;
+}
+
+# Si Backend 3 falla 3 veces en 10 segundos,
+# Nginx lo marca como "down" y no le envía tráfico durante esos 10s.
+# El tráfico se reparte entre Backend 1 y 2.
+```
+
+**Estado del Circuit:**
+- **CLOSED** (normal): Nginx envía tráfico normalmente.
+- **OPEN** (desconectado): Nginx no envía tráfico, Backend 3 descansa.
+- **HALF-OPEN** (prueba): Nginx prueba con 1 request cada 10s.
+  - Si responde → CLOSED (recuperado).
+  - Si falla → OPEN (sigue caído).
+
+#### 2. **Retry Logic (Reintentos)**
+
+Si falla una petición, reintentar con otra réplica.
+
+```nginx
+location / {
+    proxy_pass http://backend_servers;
+    proxy_next_upstream error timeout invalid_header http_500 http_502 http_503;
+    proxy_next_upstream_tries 3;
+    proxy_next_upstream_timeout 5s;
+}
+```
+
+**Flujo:**
+1. Envía petición a Backend 1 → Timeout
+2. Retry: Envía a Backend 2 → OK (responde)
+3. Cliente recibe respuesta sin saber que hubo fallo
+
+#### 3. **Rate Limiting (Limitación de tasa)**
+
+Evita que un cliente spam demore a los demás.
+
+```nginx
+limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+
+location /api/ {
+    limit_req zone=api_limit burst=20 nodelay;
+    proxy_pass http://backend_servers;
+}
+```
+
+**Explicación:**
+- `rate=10r/s`: Máximo 10 requests/segundo por IP.
+- `burst=20`: Permite picos de 20 requests siempre que el promedio sea 10/s.
+- Si un cliente hace 50 requests/s → Nginx rechaza los que superen el límite (429 Too Many Requests).
+
+#### 4. **Timeouts**
+
+Evitar esperas infinitas.
+
+```nginx
+location / {
+    proxy_pass http://backend_servers;
+    proxy_connect_timeout 5s;    # Espera 5s para conectar
+    proxy_send_timeout 5s;       # Espera 5s para que Backend lea
+    proxy_read_timeout 10s;      # Espera 10s para que Backend responda
+}
+```
+
+Si Backend no responde en 10s → Nginx envía 504 Gateway Timeout.
+
+### Implementación en nuestra arquitectura
+
+```
+Cliente
+  │
+  ▼
+Nginx (Rate Limiting + Circuit Breaker)
+  │
+  ├─ Si rate limit → Rechaza (429)
+  ├─ Si Backend falla 3 veces → Circuito abierto
+  └─ Si OK → Retry Logic (reintentar con otra réplica si falla)
+  │
+  ▼
+Backend 1/2/3 (con timeouts)
+  │
+  ▼
+MongoDB Replica Set
+```
+
+### Tabla: Comparación de patrones
+
+| Patrón | Problema que resuelve | Dónde implementar |
+|---|---|---|
+| **Circuit Breaker** | Un backend lento mata al sistema | Nginx |
+| **Retry Logic** | Fallos transitorios | Nginx |
+| **Rate Limiting** | Clientes abusivos satureando | Nginx |
+| **Timeouts** | Conexiones colgadas infinitas | Nginx + Backend |
+| **Health Checks** | Detectar backends muertos | Nginx + Swarm |
+
+---
+
+## Docker Swarm vs Kubernetes (para 25 usuarios)
+
+### El Escenario: ¿Qué elegir para una app con 25 usuarios?
+
+**Requisitos:**
+- 25 usuarios simultáneos.
+- App Node.js + MongoDB.
+- Equipo pequeño (tu grupo).
+- Presupuesto: Máquinas viejas o cloud barato.
+
+### Comparación: Swarm vs Kubernetes
+
+| Criterio | Docker Swarm | Kubernetes (k8s) |
+|---|---|---|
+| **Curva de aprendizaje** | Fácil (1-2 días) | Difícil (2-4 semanas) |
+| **Configuración** | `docker-compose.yml` | YAML + Helm + CRDs |
+| **Líneas de config** | ~50 líneas | ~500 líneas |
+| **Escalado** | `docker service scale` | Horizontal Pod Autoscaler (HPA) |
+| **Self-healing** | ✓ Reinicia contenedores | ✓ Reinicia pods |
+| **Load balancing** | Routing Mesh (simple) | Service + Ingress (potente) |
+| **Networking** | Overlay simple | CNI plugins (Flannel, Calico) |
+| **Recursos mínimos** | 3 máquinas (1GB RAM c/u) | 3 masters + workers (2GB+ c/u) |
+| **Community** | Pequeña | ENORME (estándar industria) |
+| **Capacidad** | Hasta ~1000 nodos | 5000+ nodos (Google usa internamente) |
+| **Mantenimiento** | Bajo | Alto (actualizaciones, parches) |
+| **Vendor lock-in** | Bajo | Bajo (portable) |
+
+### Para 25 usuarios: ¿Por qué Swarm es mejor?
+
+1. **Overhead bajo:** Swarm consume ~100MB RAM por nodo. k8s consume ~500MB+ solo en control plane.
+2. **Configuración rápida:** `docker-compose.yml` vs 10 archivos YAML.
+3. **Escalable suficiente:** 3 réplicas con Swarm soportan 100+ usuarios sin problemas.
+4. **Mantén el foco:** Aprendes a escalar distribuida sin perderte en k8s.
+
+### Cuándo cambiar a Kubernetes
+
+Cuando tu app crezca a:
+- **100+ usuarios**: Swarm empieza a sentirse limitado.
+- **Multi-región:** k8s es mejor para federar clusters.
+- **Múltiples lenguajes:** k8s gestiona cualquier contenedor; Swarm es más Docker-centric.
+- **Dependencias complejas:** k8s con Service Mesh (Istio).
+- **Empresa grande:** k8s es estándar.
+
+**Migración:** Lo bueno es que ambos usan Docker, así que migraste 70% del trabajo ya.
+
+---
+
+## Gestión de Actualizaciones: Zero Downtime Deployment
+
+### El Problema: Actualizar sin que los usuarios lo noten
+
+**Sin estrategia:** Parar app → Actualizar → Iniciar. Usuarios: "¿Qué está pasando?" Downtime: 2-5 minutos.
+
+**Con estrategia:** Mantener servicio activo durante toda la actualización.
+
+### Estrategia 1: Rolling Update (Ya lo tienes)
+
+```
+Estado inicial:
+  Backend Replica 1: v1.0 ✓
+  Backend Replica 2: v1.0 ✓
+  Backend Replica 3: v1.0 ✓
+
+Paso 1: Actualizar Replica 1
+  Backend Replica 1: v1.1 (reiniciando)
+  Backend Replica 2: v1.0 ✓ ← Tráfico aquí
+  Backend Replica 3: v1.0 ✓ ← Tráfico aquí
+
+Paso 2: Actualizar Replica 2
+  Backend Replica 1: v1.1 ✓
+  Backend Replica 2: v1.1 (reiniciando)
+  Backend Replica 3: v1.0 ✓ ← Tráfico aquí
+
+Paso 3: Actualizar Replica 3
+  Backend Replica 1: v1.1 ✓
+  Backend Replica 2: v1.1 ✓
+  Backend Replica 3: v1.1 (reiniciando)
+
+Final:
+  Backend Replica 1: v1.1 ✓
+  Backend Replica 2: v1.1 ✓
+  Backend Replica 3: v1.1 ✓
+
+Tiempo total: ~3 minutos (con health checks de 30s cada uno)
+Downtime: 0 minutos
+```
+
+**Configuración en Docker Compose:**
+```yaml
+services:
+  backend:
+    image: undersounds-backend:latest
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1           # Actualiza 1 réplica a la vez
+        delay: 10s               # Espera 10s entre réplicas
+        failure_action: rollback # Si falla, vuelve a versión anterior
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+```
+
+### Estrategia 2: Blue-Green Deployment
+
+Para cambios críticos o si quieres rollback instantáneo.
+
+```
+ANTES:
+
+  Nginx (Load Balancer)
+  │
+  ▼
+Blue:   Backend v1.0 (3 réplicas) ← Usuarios aquí
+Green:  Backend v1.1 (3 réplicas)  ← En espera (sin tráfico)
+
+Probar Green:
+  - Pruebas de humo: ¿Responde correctamente?
+  - ¿Base de datos OK?
+  - ¿API endpoints funcionan?
+
+DESPUÉS (Si todo OK):
+
+  Nginx actualiza router
+  │
+  ▼ (cambio instantáneo)
+Blue:   Backend v1.0 (3 réplicas)  ← Sin tráfico (backup)
+Green:  Backend v1.1 (3 réplicas) ← Usuarios aquí
+
+Si algo falla:
+  Nginx revierte el router en < 1 segundo
+  ← Usuarios vuelven a v1.0
+```
+
+**Ventajas:**
+- Rollback instantáneo (no 3 minutos como Rolling Update).
+- Cero impacto durante la actualización.
+- Puedes validar completamente antes de flip.
+
+**Desventaja:**
+- Necesita el doble de recursos (2 sets de réplicas).
+
+### Estrategia 3: Canary Deployment
+
+Actualización gradual en % de tráfico.
+
+```
+Inicial:
+  v1.0: 100% del tráfico (100 usuarios)
+  v1.1: 0% del tráfico
+
+Canary (1%):
+  v1.0: 99% del tráfico (99 usuarios)
+  v1.1: 1% del tráfico (1 usuario) ← Observar metricas
+
+Si todo OK después de 5 min:
+
+Canary (10%):
+  v1.0: 90%
+  v1.1: 10% ← Más usuarios probando
+
+Si todo OK:
+
+Canary (50%):
+  v1.0: 50%
+  v1.1: 50%
+
+Si todo OK:
+
+Final:
+  v1.0: 0%
+  v1.1: 100%
+```
+
+**Beneficio:** Si v1.1 tiene un bug, solo afecta el 1-10% de usuarios inicialmente.
+
+### Comparación de estrategias
+
+| Estrategia | Downtime | Rollback | Recursos | Validación |
+|---|---|---|---|---|
+| **Rolling Update** | 0 | 3 minutos | Normal | Media |
+| **Blue-Green** | 0 | < 1s | El doble | Alta |
+| **Canary** | 0 | Gradual | Normal | Muy alta |
+
+---
+
+## Sharding para Bases de Datos Masivas
+
+### El Problema: "Cientos de GB de datos"
+
+**Replica Set (Lo que tienes ahora):**
+- 3 nodos con copia exacta de los datos.
+- Cada nodo almacena TODO: 500 GB × 3 = 1.5 TB total.
+- ✓ Alta disponibilidad (si cae 1, quedan 2).
+- ✗ No escala el almacenamiento (cada nodo necesita 500 GB).
+
+**Sharding:**
+- Datos particionados entre múltiples nodos.
+- Nodo 1: usuarios A-G (100 GB).
+- Nodo 2: usuarios H-N (100 GB).
+- Nodo 3: usuarios O-Z (100 GB).
+- Cada shard tiene su Replica Set (HA + Sharding).
+
+### Arquitectura con Sharding
+
+```
+Query: "Dame usuario 'alice@example.com'"
+
+Mongos (Router)
+│
+├─ Hash: alice@example.com → Shard 1 (A-G)
+│
+▼
+Shard 1 Replica Set
+  ├─ Primary (100 GB)
+  ├─ Secondary (100 GB)
+  └─ Secondary (100 GB)
+  
+(Responde: "alice" encontrado)
+```
+
+### Cuándo usar Sharding
+
+- **Datos > 100 GB per-node:** Empieza a considerar.
+- **Writes > 10,000/segundo:** Sharding distribuye carga.
+- **Baja latencia requerida:** Sharding acerca datos a usuarios (geográficamente).
+
+**Para 25 usuarios iniciales:** Replica Set es suficiente.
+**Para 1000+ usuarios:** Evalúa Sharding.

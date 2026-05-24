@@ -192,11 +192,14 @@ El Routing Mesh actúa como primer balanceador de carga. Distribuye la petición
 
 ### 3. Nginx → Réplicas del Backend
 
-Cada réplica de Nginx actúa como **proxy inverso y segundo balanceador de carga**. Reenvía la petición al servicio `backend` por nombre de servicio; Swarm resuelve el nombre y balancea entre las **3 réplicas del backend**.
+Cada réplica de Nginx actúa como **proxy inverso y segundo balanceador de carga**. Reenvía la petición al `upstream` llamado `backend_servers`. Este, a su vez, apunta al nombre de servicio `backend`.
 
-Esta capa es fundamental para:
-- **Seguridad:** Oculta la estructura interna de la API.
-- **Escalabilidad:** Gestiona el tráfico hacia un número variable de réplicas.
+Aquí ocurre la magia de la colaboración:
+1.  Nginx le pide al DNS interno de Docker Swarm la dirección de `backend`.
+2.  Swarm responde no con una, sino con **todas las IPs** de las réplicas del backend que están sanas.
+3.  Nginx recibe esa lista y usa su propio algoritmo de balanceo (por defecto, Round Robin) para elegir a cuál de las réplicas le enviará la petición.
+
+Es una arquitectura muy robusta: Swarm se encarga de la disponibilidad de las réplicas y Nginx del balanceo inteligente a nivel de aplicación (HTTP).
 
 ### 4. Backend → Replica Set de MongoDB
 
@@ -283,16 +286,6 @@ Un pipeline de integración y despliegue continuo automatiza:
 | **Rollback automático** | Si el health check falla, Swarm vuelve a versión anterior |
 | **Escalabilidad** | Mismo pipeline para 3 réplicas o 100 |
 
-## BLUE-GREEN
-
-Para garantizar la alta disponibilidad de la aplicación y minimizar los riesgos durante los lanzamientos de nuevas versiones.
-
-Mantenemos dos entornos de producción idénticos pero aislados:
-
-1. Entorno Azul (Blue): Es el entorno que está actualmente activo y recibiendo el 100% del tráfico de los usuarios reales.
-
-2. Entorno Verde (Green): Es el entorno de reserva (en espera), donde se despliega y prueba la nueva versión del software de forma segura antes de pasar a producción.
-
 ### Flujo de Trabajo
 
 [ Tráfico Usuario ] -> [ Enrutador/Balanceador ]
@@ -345,21 +338,20 @@ Socket de Nginx agotado → Otros clientes se quedan sin respuesta
 
 #### 1. **Circuit Breaker (Disyuntor)**
 
-Evita que un servicio caído demore a todos los demás.
+Evita que una réplica del servicio que funciona mal "contagie" y ralentice todo el sistema.
 
 ```nginx
-# En Nginx: Si Backend 3 no responde, Nginx para enviarle tráfico
-# (en lugar de esperar 30s cada vez)
+# En Nginx: Si una de las réplicas del backend no responde, Nginx puede dejar de enviarle tráfico.
 
 upstream backend_servers {
-    server backend1:3000 max_fails=3 fail_timeout=10s;
-    server backend2:3000 max_fails=3 fail_timeout=10s;
-    server backend3:3000 max_fails=3 fail_timeout=10s;
+    # Docker Swarm resuelve 'backend' a las IPs de todas las réplicas activas.
+    # Nginx aplicará estas reglas a cada una de ellas de forma individual.
+    # Si una réplica falla 3 veces en 10 segundos, Nginx la marca como "caída"
+    # y deja de enviarle tráfico durante esos 10s, permitiendo que se recupere.
+    server backend:5000 max_fails=3 fail_timeout=10s;
 }
 
-# Si Backend 3 falla 3 veces en 10 segundos,
-# Nginx lo marca como "down" y no le envía tráfico durante esos 10s.
-# El tráfico se reparte entre Backend 1 y 2.
+# El tráfico se reparte automáticamente entre las réplicas que quedan sanas.
 ```
 
 **Estado del Circuit:**
@@ -555,8 +547,13 @@ services:
 ```
 
 ### Estrategia 2: Blue-Green Deployment
+Para garantizar la alta disponibilidad de la aplicación y minimizar los riesgos durante los lanzamientos de nuevas versiones.
 
-Para cambios críticos o si quieres rollback instantáneo.
+Mantenemos dos entornos de producción idénticos pero aislados:
+
+1. Entorno Azul (Blue): Es el entorno que está actualmente activo y recibiendo el 100% del tráfico de los usuarios reales.
+
+2. Entorno Verde (Green): Es el entorno de reserva (en espera), donde se despliega y prueba la nueva versión del software de forma segura antes de pasar a producción.Para cambios críticos o si quieres rollback instantáneo.
 
 ```
 ANTES:

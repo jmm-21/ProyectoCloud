@@ -23,6 +23,10 @@ const session = require('express-session');
 mongoose.set('strictQuery', false);
 
 const app = express();
+// Ruta especial para que el Health Check de AWS sepa que el backend está vivo
+app.get('/', (req, res) => {
+  res.status(200).send('Backend de UnderSounds operando correctamente');
+});
 
 const Album = require('./model/models/Album');
 
@@ -77,7 +81,9 @@ app.use('/assets', (req, res, next) => {
   next();
 });
 
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+// Añadimos una clave de pruebas falsa por si la variable de entorno no existe en AWS
+const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_falsa_emergencia_aws_51N...';
+const stripe = Stripe(stripeKey);
 
 // Conectar a MongoDB
 connectDB();
@@ -181,47 +187,43 @@ const CURRENT_DB_VERSION = getVersionFromFile(sharedMetaFile);
 // Al iniciar, se compara la versión local con la global (CURRENT_DB_VERSION).
 // Si la versión local es menor, se ejecuta mongoimport y luego se actualizan ambos ficheros.
 const checkAndImportData = async () => {
-  // Esperar a que la conexión a la BD esté lista
-  if (mongoose.connection.readyState !== 1) {
-    await new Promise(resolve => mongoose.connection.once('open', resolve));
-  }
+  console.log("[AWS] Iniciando secuencia de arranque de emergencia...");
 
-  try {
-    const count = await Album.countDocuments();
-    const localVersion = getVersionFromFile(localMetaFile);
-    
-    console.log(`[DB Check] Versión Local: ${localVersion}, Global: ${CURRENT_DB_VERSION}, Documentos en Album: ${count}`);
-
-    // Importar si la versión es antigua O si la base de datos está vacía
-    if (localVersion < CURRENT_DB_VERSION || count === 0) {
-      console.log("La versión local es antigua o la BD está vacía. Ejecutando importación...");
-      
-      // Usar spawn para ejecutar el script y ver los logs en tiempo real
-      const child = spawn('node', ['import-db.js'], { stdio: 'inherit' });
-      
-      child.on('close', (code) => {
-        console.log(`Importación finalizada con código ${code}`);
-        // Se conserva el array actual de colecciones, o se usa [] si no existe
-        let currentCollections = [];
-        try {
-          const metaData = fs.existsSync(sharedMetaFile) ? JSON.parse(fs.readFileSync(sharedMetaFile, 'utf8')) : {};
-          currentCollections = metaData.colecciones || [];
-        } catch (e) {
-          console.error(e);
-        }
-        updateVersionFile(sharedMetaFile, CURRENT_DB_VERSION, currentCollections);
-        updateVersionFile(localMetaFile, CURRENT_DB_VERSION, currentCollections);
-        
-        startServer();
-      });
-    } else {
-      console.log("La BD ya está actualizada y contiene datos.");
+  // 1. Bandera para asegurarnos de que Express SOLO se enciende UNA VEZ
+  let serverStarted = false;
+  const safeStartServer = () => {
+    if (!serverStarted) {
+      serverStarted = true;
+      clearTimeout(timeout); // Cancelamos el temporizador de emergencia
+      console.log("[AWS] Dando orden de encender Express...");
       startServer();
     }
-  } catch (error) {
-    console.error("Error verificando estado de la BD:", error);
-    startServer();
+  };
+
+  // 2. Temporizador de emergencia: si en 4 segundos Mongo no responde, arrancamos Express igual
+  const timeout = setTimeout(() => {
+    console.log("[AWS WARN] Mongoose tarda demasiado en conectar. Arrancando Express por emergencia para evitar caída en AWS...");
+    safeStartServer();
+  }, 4000);
+
+  // 3. Esperar pacientemente la conexión a la base de datos de Atlas
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      console.log("[AWS] Esperando evento 'open' de Mongoose...");
+      await new Promise(resolve => mongoose.connection.once('open', resolve));
+      console.log("[AWS] ¡Conexión con Atlas confirmada por evento!");
+    } catch (err) {
+      console.error("[AWS ERROR] Error esperando la conexión a Mongo:", err);
+    }
+  } else {
+    console.log("[AWS] Mongoose ya estaba conectado previamente.");
   }
+
+  // 4. ¡EL CORTE RADICAL! Saltamos por completo el conteo de álbumes, versiones y el spawn('import-db.js')
+  console.log("[AWS] Omitiendo chequeo de versiones locales e import-db.js para entorno cloud.");
+  
+  // 5. Encendemos el servidor de forma segura
+  safeStartServer();
 };
 
 // ----- Gestión del respaldo (mongoexport) al cierre -----

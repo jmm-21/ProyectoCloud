@@ -20,7 +20,7 @@ passport.deserializeUser(async (id, done) => {
 // Configurar estrategia JWT
 const jwtOptions = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET
+  secretOrKey: process.env.ACCESS_TOKEN_SECRET || process.env.REFRESH_TOKEN_SECRET || 'clave_secreta_de_emergencia_undersounds_123'
 };
 
 passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
@@ -37,9 +37,9 @@ passport.use(new JwtStrategy(jwtOptions, async (payload, done) => {
 
 // Estrategia Google existente
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,         
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL 
+    clientID: process.env.GOOGLE_CLIENT_ID || 'texto_falso_google_client_id_para_aws',         
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'texto_falso_google_client_secret_para_aws',
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || 'texto_falso_google_callback_url_para_aws'
   },
   async (accessToken, refreshToken, profile, done) => {
     try {

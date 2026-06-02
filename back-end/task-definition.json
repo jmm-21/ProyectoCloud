@@ -1,0 +1,39 @@
+{
+  "family": "undersounds-backend-task",
+  "executionRoleArn": "arn:aws:iam::756696761399:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "containerDefinitions": [
+    {
+      "name": "backend-container",
+      "image": "756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "hostPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "BASE_URL",
+          "value": "http://alb-undersounds-867526094.eu-north-1.elb.amazonaws.com"
+        },
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "MONGO_URI",
+          "value": "mongodb+srv://marinatrabaa_db_user:qEvgHJaQUihFkvwE@cluster0.keo4ezr.mongodb.net/test?appName=Cluster0"
+        }
+      ]
+    }
+  ]
+}

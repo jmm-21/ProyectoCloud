@@ -65,21 +65,21 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 1. Definimos la ruta base de assets (suponiendo que este archivo está en la raíz de /back-end)
+// 1. Definimos la ruta base de assets
 const assetsPath = path.join(__dirname, 'assets');
 
-// 2. Servir TODA la carpeta assets bajo el prefijo /assets
-// Esto cubrirá automáticamente /assets/images y /assets/music
-app.use('/assets', express.static(assetsPath));
+// 2. EL DIAGNÓSTICO PRIMERO: Así registrará en los logs de AWS qué archivo exacto falla
+app.use('/assets', (req, res, next) => {
+  console.log(`[ASSETS ACCESO] Petición recibida para: ${req.path}`);
+  next();
+});
 
+// 3. Servir las subcarpetas específicas (Primero lo más específico)
 app.use('/assets/music', express.static(path.join(assetsPath, 'music')));
 app.use('/assets/images', express.static(path.join(assetsPath, 'images')));
 
-// Middleware de diagnóstico para ver qué imágenes faltan
-app.use('/assets', (req, res, next) => {
-  console.log(`[ASSETS 404] No se encontró el archivo: ${req.path}`);
-  next();
-});
+// 4. Servir la carpeta global por si acaso
+app.use('/assets', express.static(assetsPath));
 
 // Añadimos una clave de pruebas falsa por si la variable de entorno no existe en AWS
 const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_falsa_emergencia_aws_51N...';

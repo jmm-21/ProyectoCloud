@@ -25,7 +25,7 @@ jobs:
 
       - name: Construir y subir imagen a ECR
         run: |
-          docker build -t undersounds-backend .
+          docker build -t undersounds-backend -f back-end/Dockerfile .
           docker tag undersounds-backend:latest 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
           docker push 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
 

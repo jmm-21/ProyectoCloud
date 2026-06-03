@@ -678,3 +678,43 @@ Shard 1 Replica Set
 **Para 25 usuarios iniciales:** Replica Set es suficiente.
 **Para 1000+ usuarios:** Evalúa Sharding.
 
+---
+# Flujo CI/CD
+
+## Fase 1: GitHub Actions (En la nube de GitHub)
+
+GitHub detecta que ha llegado código nuevo y arranca el pipeline que hemos creado:
+
+1. Inicia sesión en tu AWS.
+2. Compila la imagen de Docker del backend.
+3. Sube esa imagen a AWS ECR sustituyendo la versión anterior (`latest`).
+4. Le manda una orden directa a AWS ECS diciéndole: "¡Ey! Tienes una imagen nueva en ECR, actualiza el servicio".
+
+Ahí es donde termina el trabajo de GitHub y empieza el de Amazon.
+
+---
+
+## Fase 2: AWS ECS (El despliegue Blue/Green nativo)
+
+En cuanto AWS ECS recibe esa orden de GitHub, empieza a ejecutar el comportamiento de Blue/Green de forma 100% automática en tu panel de AWS sin que tú hagas nada más:
+
+1. **Revisa los Target Groups:** ECS ve cuál de tus dos Target Groups está libre y a cero tareas (el que está en el banquillo).
+2. **Arranca la nueva versión:** Levanta los nuevos contenedores (con el código que acabas de subir) únicamente en ese Target Group vacío.
+3. **Pasa el control de salud:** Espera un par de minutos a que el Load Balancer verifique que esos nuevos contenedores responden bien y pasen a estado Healthy.
+4. **El cambiazo de tráfico:** En el segundo en que el nuevo grupo está sano, el Load Balancer empieza a enviarle el 100% del tráfico de los usuarios a ese grupo.
+5. **La limpieza:** El Target Group viejo (el que tenía la versión antigua) deja de recibir visitas, ECS apaga de forma segura sus contenedores viejos y sus tareas vuelven a quedarse a 0.
+
+---
+
+## En resumen
+
+Tú solo haces:
+
+```powershell
+git add .
+git commit -m "Mi cambio de código"
+git push origin main
+```
+
+Y el sistema, él solo, se encarga de compilar, subir a la nube, levantar el entorno Green de pruebas, comprobar que funciona, pasarle el tráfico de producción y vaciar el entorno Blue viejo. ¡Todo el ciclo completo de Blue/Green ocurre de forma totalmente desatendida gracias a tu nuevo pipeline!
+```

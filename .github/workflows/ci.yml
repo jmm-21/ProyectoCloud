@@ -25,8 +25,8 @@ jobs:
 
       - name: Construir y subir imagen a ECR
         run: |
-          # Cambiado contexto a ./back-end y ruta de Dockerfile a back-end/Dockerfile
-          docker build -t undersounds-backend -f back-end/Dockerfile ./back-end
+          # Construimos desde la raíz "." pero apuntando al Dockerfile en la subcarpeta
+          docker build -t undersounds-backend -f back-end/Dockerfile .
           docker tag undersounds-backend:latest 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
           docker push 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
 

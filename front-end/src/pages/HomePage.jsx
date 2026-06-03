@@ -97,6 +97,8 @@ const HomePage = () => {
     </div>
   );
 
+  
+  
   return (
     <div>
       {/* Sección de noticias */}

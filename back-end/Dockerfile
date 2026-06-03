@@ -7,16 +7,19 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Nos paramos en la carpeta de trabajo del contenedor
 WORKDIR /app
 
-# Copiamos solo los archivos de dependencias primero
+# Copiamos el package.json (que ahora estará en la misma carpeta desde donde compilas)
 COPY package*.json ./
 
-# Instalamos y forzamos la compilación de bcrypt en Linux
+# Instalamos las dependencias
 RUN npm install && npm rebuild bcrypt --build-from-source
 
+# Copiamos el resto del código del backend
 COPY . .
 
 EXPOSE 5000
 
+# El comando de arranque limpio
 CMD ["node", "server.js"]

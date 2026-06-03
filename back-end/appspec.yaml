@@ -7,3 +7,11 @@ Resources:
         LoadBalancerInfo:
           ContainerName: "backend-container"
           ContainerPort: 5000
+          TargetGroupPairInfo:
+            TargetGroups:
+              - Name: "tg-undersounds-backend"
+              - Name: "tg-backend-green"
+            ProdTrafficRoute:
+              ListenerArn: arn:aws:elasticloadbalancing:eu-north-1:756696761399:listener/app/alb-undersounds/833984ad46bcd306/2b70918c565b17ac
+            TestTrafficRoute:
+              ListenerArn: arn:aws:elasticloadbalancing:eu-north-1:756696761399:listener/app/alb-undersounds/833984ad46bcd306/1951bf5d198016fa/a0a5c834c1637808

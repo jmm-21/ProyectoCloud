@@ -24,28 +24,19 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Construir y subir imagen a ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          # Construimos desde la raíz "." pero apuntando al Dockerfile en la subcarpeta
-          docker build -t undersounds-backend -f back-end/Dockerfile .
-          docker tag undersounds-backend:latest 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
-          docker push 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
+          # 1. Nos movemos a la carpeta para no pesar gigas
+          cd back-end
+          
+          # 2. Compilamos apuntando a tu registro de AWS
+          docker build -t $ECR_REGISTRY/undersounds-backend:latest .
+          
+          # 3. Empujamos la imagen a la nube
+          docker push $ECR_REGISTRY/undersounds-backend:latest
 
-      - name: Registrar nueva definición de tarea
-        id: task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: backend-container
-          image: 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
-
-      - name: Despliegue Blue/Green a ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: backend-service-bg
-          cluster: cluster-undersounds2
-          wait-for-service-stability: true
-          # Asegúrate de que el nombre del archivo en tu repo sea exactamente este:
-          codedeploy-appspec: appspec.yaml
-          codedeploy-application: AppECS-cluster-undersounds2-backend-service-bg
-          codedeploy-deployment-group: DgpECS-cluster-undersounds2-backend-service-bg
+      # AQUÍ ESTÁ TU NUEVO DESPLIEGUE SEGURO (Sustituye al viejo)
+      - name: Forzar despliegue Blue/Green en Amazon ECS
+        run: |
+          aws ecs update-service --cluster cluster-undersounds2 --service backend-service-bg --force-new-deployment --region eu-north-1

@@ -1,31 +1,50 @@
 name: Pipeline de Mi Proyecto
 
-# 1. ¿Cuándo se va a ejecutar?
 on:
   push:
-    branches: [ "main", "master" ] # Se activa cuando subes código a estas ramas
-  pull_request:
-    branches: [ "main", "master" ] # O cuando abres un Pull Request
+    branches: [ "main", "master" ]
 
-# 2. ¿Qué va a hacer?
 jobs:
-  construir-y-probar:
-    runs-on: ubuntu-latest # GitHub te presta una máquina virtual con Linux gratis
+  construir-y-desplegar:
+    runs-on: ubuntu-latest
 
     steps:
-      # Paso A: Clonar tu código dentro de la máquina virtual de GitHub
       - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      # Paso B: Configurar el entorno (Borra los que NO uses y deja el tuyo)
-      # --- SI TU PROYECTO ES DE NODE.JS ---
-      - name: Configurar Node.js
-        uses: actions/setup-node@v4
+      - name: Configurar credenciales AWS
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          node-version: '24' # Cambia a tu versión
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
 
-      # Paso C: Instalar las dependencias de tu proyecto
-      - name: Instalar dependencias
+      - name: Login en ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construir y subir imagen a ECR
         run: |
-          npm install
-          # Si usas Python sería: pip install -r requirements.txt
+          docker build -t undersounds-backend .
+          docker tag undersounds-backend:latest 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
+          docker push 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
+
+      - name: Registrar nueva definición de tarea
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: backend-container
+          image: 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
+
+      - name: Despliegue Blue/Green a ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: backend-service-bg
+          cluster: cluster-undersounds2
+          wait-for-service-stability: true
+          codedeploy-appspec: appspec.yaml
+          # Asegúrate que estos nombres coinciden con tu consola de CodeDeploy:
+          codedeploy-application: AppECS-cluster-undersounds2-backend-service-bg
+          codedeploy-deployment-group: DgpECS-cluster-undersounds2-backend-service-bgtxt

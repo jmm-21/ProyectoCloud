@@ -25,7 +25,8 @@ jobs:
 
       - name: Construir y subir imagen a ECR
         run: |
-          docker build -t undersounds-backend -f back-end/Dockerfile .
+          # Cambiado contexto a ./back-end y ruta de Dockerfile a back-end/Dockerfile
+          docker build -t undersounds-backend -f back-end/Dockerfile ./back-end
           docker tag undersounds-backend:latest 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
           docker push 756696761399.dkr.ecr.eu-north-1.amazonaws.com/undersounds-backend:latest
 
@@ -44,7 +45,7 @@ jobs:
           service: backend-service-bg
           cluster: cluster-undersounds2
           wait-for-service-stability: true
+          # Asegúrate de que el nombre del archivo en tu repo sea exactamente este:
           codedeploy-appspec: appspec.yaml
-          # Asegúrate que estos nombres coinciden con tu consola de CodeDeploy:
           codedeploy-application: AppECS-cluster-undersounds2-backend-service-bg
-          codedeploy-deployment-group: DgpECS-cluster-undersounds2-backend-service-bgtxt
+          codedeploy-deployment-group: DgpECS-cluster-undersounds2-backend-service-bg

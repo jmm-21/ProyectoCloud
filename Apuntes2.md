@@ -113,3 +113,41 @@ El "Cambiazo" de tráfico (Switch): Una vez que AWS ECS comprueba que todos los 
 El ALB, de forma instantánea y fluida, empieza a redirigir el 100% del tráfico de los usuarios hacia el Target Group Green.
 
 Apagado del entorno antiguo: Los usuarios ya están usando la nueva versión (Green). El ALB mantiene los contenedores Blue encendidos durante unos minutos por si acaso algo fallara (volver a Blue en un milisegundo). Si todo va bien, ECS apaga ordenadamente los contenedores viejos (Blue) para no consumir recursos.
+
+---
+
+## Patrones de red
+
+### El Patrón DMZ / Subredes Públicas y Privadas (El más importante)
+
+Este es el patrón de seguridad por excelencia en la nube. Consiste en dividir nuestra red (VPC) en dos zonas aisladas:
+
+    Subred Pública (La "Capa Exteror"): Es la única zona con acceso directo a Internet gracias a un componente llamado Internet Gateway. Aquí solo se coloca el Balanceador de Carga (ALB).
+
+    Subred Privada (La "Capa Interior"): No tiene acceso directo desde el exterior. Aquí se esconden nuestros contenedores de ECS (Front y Back) y la Base de Datos si la movemos ahí.
+
+¿Cómo funciona este patrón? El tráfico de internet entra obligatoriamente por el ALB en la subred pública. El ALB actúa como un "muro de contención" y redirige el tráfico hacia la subred privada de forma controlada. Si un atacante intenta conectarse directamente a la IP de nuestro    backend, la red de AWS lo bloquea porque la subred privada es invisible desde el exterior.
+
+### El Patrón de Microservicios con Balanceador de Carga Interno (o Enrutamiento por Caminos)
+
+En local, teniamos Nginx decidiendo a dónde iba cada petición. En AWS, el patrón de red correcto utiliza el ALB basado en rutas (Path-based Routing).
+
+El patrón consiste en definir una única puerta de entrada y dividir el tráfico en la capa de red:
+
+    El tráfico que llega a la raíz (/ o /index.html) se envía al Target Group del Frontend.
+
+    El tráfico que llega a la ruta de la API (/api/*) se desvía al Target Group del Backend.
+
+Esto permite que, a nivel de red, el Frontend y el Backend escalen de forma totalmente independiente. Si el backend se satura por muchas peticiones a la base de datos, el patrón de red asegura que el Frontend siga sirviendo la web estática sin enterarse del problema.
+
+### El Patrón de Red para los Contenedores: AWS VPC Network Mode (awsvpc)
+
+Cuando deplegamos contenedores en AWS ECS (especialmente si usamos AWS Fargate), existe un patrón de red específico para los contenedores llamado modo awsvpc.
+
+Cómo funcionaba en Swarm: Todos los contenedores compartían la red de la máquina virtual y nos teniamos que pelear mapeando puertos (8080:80, 5000:5000).
+
+Cómo funciona el patrón awsvpc: AWS le asigna a cada contenedor su propia tarjeta de red virtual (ENI) y su propia IP privada dentro de nuestra subred.
+
+¿Qué significa esto? Que nuestro contenedor de Backend tiene su propia IP como si fuera un servidor independiente. Esto hace que la comunicación sea muchísimo más rápida, limpia y permite aplicar políticas de seguridad (Security Groups) específicas para cada contenedor por separado.
+
+---

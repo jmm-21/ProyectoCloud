@@ -4,6 +4,33 @@ Actualizacion con el despliegue de la web en los servicios de AWS.
 
 ---
 
+## 1. High-Level Overview & Core Infrastructure
+
+The network architecture is built upon a dedicated *VPC (Virtual Private Cloud)* that isolates and secures all underlying computational resources.
+
+To implement industry-standard *High Availability (HA) and Fault Tolerance, the VPC is horizontally partitioned into **three distinct Subnets* spanning different Availability Zones.
+
+By distributing resources across three isolated subnets, the architecture eliminates any Single Point of Failure (SPOF) at the data center level. If one of AWS’s physical zones experiences an outage, the traffic router dynamically re-routes requests to the remaining healthy infrastructure seamlessly.
+
+## 2. Containerized Microservices Layer (AWS ECS)
+The core application logic of UnderSounds is decoupled into a containerized microservices pattern using *AWS ECS (Elastic Container Service)*.
+
+Instead of managing monolithic virtual machines, the platform relies on lightweight Docker containers managed by an ECS Cluster (cluster-undersounds2). This layer is explicitly split into two decoupled services running simultaneously across all three subnets:
+
+ * *frontend-service*: Handles the user interface, client-side routing, and static asset delivery.
+ * *backend-service*: Exposes the REST API, processes business logic, and manages core application workflows.
+
+Because ECS automatically provisions and balances tasks across the three subnets, both the frontend and backend scale horizontally and maintain continuous uptime.
+
+## 3. Container Management & Storage (AWS ECR)
+
+To power the ECS cluster, the architecture incorporates *AWS ECR (Elastic Container Registry)*.
+
+ * ECR acts as our secure, private Docker image repository.
+ * It hosts immutable, version-controlled blueprints of both the frontend-service and backend-service.
+ * When the cluster needs to scale out or deploy an update, it securely pulls the specific compiled Docker images directly from ECR, ensuring rapid deployment and environment consistency.
+
+
 ## Flujo de una Peticion
 
 ```

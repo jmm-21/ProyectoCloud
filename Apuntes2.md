@@ -143,6 +143,14 @@ Apagado del entorno antiguo: Los usuarios ya están usando la nueva versión (Gr
 
 ---
 
+## EL enlace para nuestra aplicación
+
+El enlace de acceso a la aplicación corresponde al DNS Name público del Application Load Balancer (ALB), cuyo formato ([Nombre]-[ID].[Región].elb.amazonaws.com) identifica el recurso en la región de Estocolmo (eu-north-1). Se utiliza este direccionamiento en lugar de IPs estáticas debido a que los contenedores en AWS ECS poseen IPs efímeras que cambian en cada despliegue. El DNS del ALB actúa como un punto de entrada único e invariable, abstrayendo la infraestructura interna y permitiendo el enrutamiento por caminos (/ frente a /api) hacia las subredes correspondientes.
+
+El nombre de DNS provisto por el ALB es una dirección provisional y por defecto. Para un despliegue comercial, la arquitectura permite asociar un dominio personalizado (ej. undersounds.com) mediante Amazon Route 53. Esto se realiza configurando un Registro Alias que mapea el dominio propio hacia el DNS del balanceador. Adicionalmente, el proceso requeriría generar un certificado SSL/TLS mediante AWS Certificate Manager (ACM) acoplado al ALB para habilitar el protocolo seguro HTTPS (puerto 443) de cara a los usuarios finales.
+
+---
+
 ## Patrones de red
 
 ### El Patrón DMZ / Subredes Públicas y Privadas (El más importante)

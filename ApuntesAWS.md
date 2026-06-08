@@ -86,6 +86,18 @@ El prefijo +srv le indica a nuestro Backend (Node.js) que consulte los registros
 
 ---
 
+## Arquitectura de Enrutamiento y Target Groups
+
+Para la gestión del tráfico de red se ha implementado un esquema basado en Target Groups vinculados a nuestro Application Load Balancer (ALB). Estos componentes actúan como una capa de abstracción sobre los servicios de AWS ECS (Fargate), ofreciendo tres ventajas arquitectónicas:
+
+Conmutación por error y Alta Disponibilidad: Los Target Groups realizan Health Checks HTTP periódicos sobre los puertos expuestos de los contenedores (frontend-service y backend-service), garantizando que el tráfico se derive exclusivamente a tareas en estado óptimo.
+
+Enrutamiento por Capas (Routing Rules): Permiten la segmentación del tráfico entrante mediante el mapeo de rutas independientes utilizando un único nombre de dominio.
+
+Despliegues Zero-Downtime: Permiten la coexistencia de dos entornos lógicos aislados (Target Group Blue y Target Group Green) para realizar actualizaciones controladas de la API de backend mediante la redirección dinámica de punteros del balanceador sin interrupción del servicio.
+
+---
+
 ## Autoescalabilidad
 
 Al migrar a AWS, sustituimos la gestión estática de réplicas de Docker Swarm por AWS ECS Service Auto Scaling. Mediante alarmas de Amazon CloudWatch basadas en el uso de CPU, la infraestructura es capaz de duplicar horizontalmente el número de contenedores de Backend ante picos de tráfico, registrándolos dinámicamente en el ALB. Una vez normalizado el servicio, el sistema reduce los contenedores automáticamente, logrando una arquitectura elástica, de alta disponibilidad y optimizada en costes.

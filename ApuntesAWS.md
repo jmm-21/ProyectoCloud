@@ -3,7 +3,51 @@
 Actualizacion con el despliegue de la web en los servicios de AWS.
 
 ---
+# Qué es cada cosa en la imagen de la estructura
 
+1. El punto de entrada (el círculo con flechas a la izquierda) / The Entry Point:
+   - Qué es: Es el balanceador de carga (Load Balancer)
+   - Cómo explicarlo: "Es la puerta de entrada de nuestra aplicación. Cuando un usuario entra a UnderSounds, su petición llega aquí primero. Este componente se encarga de recibir todo el tráfico de internet y repartirlo de forma limpia entre nuestros servidores para que la web no se sature."
+   - En inglés: "This is the entry point of our application. When a user accesses UnderSounds, their request arrives here first. This component is responsible for receiving all incoming internet traffic and distributing it cleanly across our servers to prevent the website from getting overloaded."
+
+2. El cuadro morado exterior (eu-north-1):
+   - Qué es: La región de AWS (Estocolmo) / The AWS Region (Stockholm)
+   - Cómo explicarlo: "Todo nuestro sistema está desplegado físicamente en la región de AWS de Estocolmo. Elegimos un servidor europeo para asegurar una baja latencia (que la web cargue rápido) y cumplir con las normativas de protección de datos."
+   - En inglés: "Our entire system is physically deployed in the AWS Stockholm region. We chose a European server to guarantee low latency (ensuring the website loads fast) and to strictly comply with data protection regulations."
+
+3. El cuadro verde (vpc-04ded...):
+   - Qué es: la VPC (Virtual Private Cloud)
+   - Cómo explicarlo: "La VPC es nuestra red virtual privada. Es como poner una valla o un muro de seguridad alrededor de nuestro proyecto en la nube para que nadie pueda acceder directamente a nuestros servidores desde fuera si no está autorizado."
+   - En inglés: "The VPC is our virtual private network. It acts like a security fence or a firewall around our cloud project, ensuring that no unauthorized user can directly access our servers from the outside."
+
+4. Los tres cuadros naranjas (subnet-...):
+   - Qué es: Las subredes / The subnets (High Availability)
+   - Cómo explicarlo: "Dentro de nuestra red, dividimos el espacio en 3 subredes distintas. Esto lo hacemos por Alta Disponibilidad. Si un centro de datos físico de Amazon en Estocolmo tiene un problema eléctrico o se cae, las otras dos subredes siguen funcionando y la aplicación nunca deja de estar en línea."
+   - En inglés: "Inside our network, we divide the space into 3 distinct subnets. We do this for High Availability. If one of Amazon's physical data centers in Stockholm suffers a power outage or goes down, the other two subnets keep running, and the application never goes offline."
+  
+5. Las cajas blancas de dentro (frontend-service y backend-service):
+   - Qué es: Los microservicios en el Clúster de ECS / The ECS Cluster
+   - Cómo explicarlo: "En cada una de las subredes tenemos replicados nuestros dos servicios principales corriendo en contenedores Docker:
+       - El frontend-service, que es la interfaz visual con la que interactúa el usuario.
+       - El backend-service, que contiene toda la lógica de la aplicación y las reglas de negocio.
+Al estar triplicados, nos aseguramos que el sistema aguante mucha carga de usuarios."
+   - En inglés: ""Inside each subnet, we have replicated our two main services running in Docker containers:
+       - frontend-service: This handles the visual user interface that the client interacts with.
+       - backend-service: This contains all the application logic and business rules.
+By having them triplicated, we ensure that the system can handle high user loads smoothly."
+
+6. El bloque de la derecha (MongoDB Atlas):
+   - Qué es: La base de datos NoSQL / The Database (MongoDB Atlas)
+   - Cómo explicarlo: "Aquí a la derecha, conectado directamente con nuestro backend, tenemos MongoDB Atlas. Es una base de datos NoSQL externa en la nube donde guardamos de forma segura toda la información de la plataforma (usuarios, canciones, listas, etc.). El backend se comunica constantemente con ella para leer y escribir estos datos."
+   - En inglés: "Over here on the right, directly connected to our backend, we have MongoDB Atlas. This is an external NoSQL cloud database where we securely store all the platform's information, such as users, songs, playlists, and metadata. The backend constantly communicates with it to read and write this data."
+
+7. Los bloques azules del extremo derecho (ECR Repositories):
+   - Qué es: AWS ECR (Elastic Container Registry) / Docker Deployment (AWS ECR & GitHub Actions)
+   - Cómo explicarlo: "Por último, estos bloques azules son nuestros almacenes de imágenes de Docker. Cada vez que actualizamos el código en GitHub, nuestro pipeline de GitHub Actions compila el proyecto automáticamente, crea una imagen limpia y la guarda aquí. Después, el clúster de AWS coge esa imagen de ECR para actualizar los contenedores en modo Blue-Green sin que el usuario note ningún corte."
+   - En inglés: "Finally, these blue blocks are our Docker image repositories, powered by AWS ECR. Every time we update our code on GitHub, our GitHub Actions pipeline automatically builds the project, creates a clean container image, and stores it here. After that, the AWS cluster pulls the new image from ECR to update our containers using a Blue-Green strategy, ensuring zero-downtime updates for our users."
+
+
+---
 ## 1. High-Level Overview & Core Infrastructure
 
 The network architecture is built upon a dedicated *VPC (Virtual Private Cloud)* that isolates and secures all underlying computational resources.
